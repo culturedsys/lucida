@@ -37,9 +37,9 @@ case class Paragraph(
   isBullet: Boolean,
 
   // Not entirely sure if word treats pictures and tables as paragraphs; these two
-  // attributes may be unneccessary
-  isPicture: Boolean,
-  isTable: Boolean,
+  // attributes may be unnecessary
+  // isPicture: Boolean,
+  // isTable: Boolean,
 
   // Does this paragraph have the same font size, family, bold, italic, and alignment as
   // the previous?
