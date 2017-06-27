@@ -22,8 +22,16 @@ class FeatureSuite extends FunSuite {
     assert(paragraphs(1).possibleSubsubhead)
   }
 
+  test("Paragraph 1 should not be a possibleEmail") {
+    assert(!paragraphs(1).possibleEmail)
+  }
+
   test("Paragraph 2 should be a possibleEmail") {
     assert(paragraphs(2).possibleEmail)
+  }
+
+  test("Paragraph 2 should not be a possibleWeb") {
+    assert(!paragraphs(2).possibleWeb)
   }
 
   test("Paragraph 3 should be a possibleWeb") {
@@ -66,12 +74,24 @@ class FeatureSuite extends FunSuite {
     assert(paragraphs(12).fontSize === Small)
   }
 
+  test("Paragraph 12 should not be bold") {
+    assert(!paragraphs(12).isBold)
+  }
+
   test("Paragraph 13 should be bold") {
     assert(paragraphs(13).isBold)
   }
 
+  test("parahraph 13 should not be italic") {
+    assert(!paragraphs(13).isItalic)
+  }
+
   test("Paragraph 14 should be italic") {
     assert(paragraphs(14).isItalic)
+  }
+
+  test("Parahraph 14 should not be a bullet") {
+    assert(!paragraphs(14).isBullet)
   }
 
   test("Paragraph 15 should be a bullet") {
@@ -102,5 +122,9 @@ class FeatureSuite extends FunSuite {
 
   test("Paragraph 22 should not be the same as previous") {
     assert(!paragraphs(22).isSameAsPrevious)
+  }
+
+  test("Paragraph 23 should not be the same as previous") {
+    assert(!paragraphs(23).isSameAsPrevious)
   }
 }
