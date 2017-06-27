@@ -8,7 +8,7 @@ import org.scalatest.FunSuite
   */
 class FeatureSuite extends FunSuite {
 
-  val source = getClass.getResourceAsStream("features.docx")
+  val source = getClass.getResourceAsStream("features.doc")
 
   assert(source != null)
 

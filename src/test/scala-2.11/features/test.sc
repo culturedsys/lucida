@@ -6,3 +6,4 @@ val v: (Test => Int) = _.something
 
 classOf[Test].getResource("features.docx")
 
+
