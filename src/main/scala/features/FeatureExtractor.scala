@@ -33,8 +33,6 @@ object FeatureExtractor {
     * size; this method attempts to find the size of the largest run in the paragraph
     */
   def estimateFontSize(para: usermodel.Paragraph): Int =
-    // TODO: Check if POI considers styles as well as properties explicitly on the character run.
-    // Note the division by 2, because the Word format stores font sizes in half points.
     (0 until para.numCharacterRuns()).foldLeft((0, 0)){ (acc, index) =>
       val (longest, size) = acc
       val run = para.getCharacterRun(index)
@@ -43,7 +41,7 @@ object FeatureExtractor {
         (length, run.getFontSize)
       else
         (longest, size)
-    }._2 / 2
+    }._2 / 2 // Note the division by two, because Word stores font sizes as half points
 
   /**
     * Estimates whether a paragraph is in bold, simply by checking for the presence of bold.
@@ -76,7 +74,6 @@ object FeatureExtractor {
     */
   def extract(stream: InputStream): Try[IndexedSeq[Paragraph]] = Try {
     val document = new HWPFDocument(stream)
-    val styles = document.getStyleSheet
     val documentLength = document.getRange.numParagraphs()
     val paragraphs = (0 until documentLength).map(document.getRange.getParagraph(_))
 

@@ -131,4 +131,17 @@ class FeatureSuite extends FunSuite {
   test("Paragraph 23 should not be the same as previous") {
     assert(!paragraphs(23).isSameAsPrevious)
   }
+
+  test("Paragraph 24 should be bold (via a style)") {
+    assert(paragraphs(24).isBold)
+  }
+
+  test("Paragraph 25 should be italic (via a style)") {
+    assert(paragraphs(25).isItalic)
+  }
+
+  test("Paragraph 26 should have fontSize 0 (via a style") {
+    assert(paragraphs(26).fontSize == RelativeSize(0))
+  }
+
 }
