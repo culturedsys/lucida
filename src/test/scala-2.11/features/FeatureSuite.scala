@@ -10,9 +10,13 @@ class FeatureSuite extends FunSuite {
 
   val source = getClass.getResourceAsStream("features.doc")
 
-  assert(source != null)
+  assume(source != null)
 
-  val paragraphs: IndexedSeq[Paragraph] = FeatureExtractor.extract(source)
+  val extracted = FeatureExtractor.extract(source)
+
+  assume(extracted.isSuccess)
+
+  val paragraphs = extracted.get
 
   test("Paragraph 0 should be a possibleSubhead") {
     assert(paragraphs(0).possibleSubhead)

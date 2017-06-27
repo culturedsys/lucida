@@ -5,6 +5,7 @@ import java.io.InputStream
 import org.apache.poi.hwpf.HWPFDocument
 import org.apache.poi.hwpf.usermodel
 
+import scala.util.Try
 import scala.util.matching.Regex
 
 
@@ -73,7 +74,7 @@ object FeatureExtractor {
   /**
     * Extract a sequence of Paragraph objects from an InputStream containing a doc
     */
-  def extract(stream: InputStream): IndexedSeq[Paragraph] = {
+  def extract(stream: InputStream): Try[IndexedSeq[Paragraph]] = Try {
     val document = new HWPFDocument(stream)
     val styles = document.getStyleSheet
     val documentLength = document.getRange.numParagraphs()
@@ -85,7 +86,8 @@ object FeatureExtractor {
       (m, i) => m + (i -> (m(i) + 1))
     }.toSeq.maxBy(_._2)._1
 
-    paragraphs.foldLeft((Vector[Paragraph](), 0, None: Option[usermodel.Paragraph])){ (acc, para) =>
+    paragraphs.foldLeft((Vector[Paragraph](), 0, None: Option[usermodel.Paragraph])){
+      (acc, para) =>
       val (processed, index, last) = acc
       val text = para.text()
 
