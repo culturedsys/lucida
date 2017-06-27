@@ -3,16 +3,16 @@ package features
 import org.scalatest.FunSuite
 
 /**
-  * Test that the attributes reported by the extractor match the attributes manually identified
+  * Test that the attributes reported by the DocExtractor match the attributes manually identified
   * in a test document.
   */
-class FeatureSuite extends FunSuite {
+class DocExtractorSuite extends FunSuite {
 
   val source = getClass.getResourceAsStream("features.doc")
 
   assume(source != null)
 
-  val extracted = FeatureExtractor.extract(source)
+  val extracted = DocExtractor.extract(source)
 
   assume(extracted.isSuccess)
 
