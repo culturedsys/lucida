@@ -21,6 +21,13 @@ object DocExtractor extends FeatureExtractor {
   val POSITION_BINS = 8
 
   /**
+    * Luong et al. only specifically pay attention to the largest three font sizes - everything
+    * else is grouped together as "Smaller", "Common", or "Larger". This constant controls
+    * how many of the largest sizes to pay attention to.
+    */
+   val DISTINCT_SIZES = 3
+
+  /**
     * Sequences of dotted numbers are used as a possible sign of sub and sub-subheads.
     */
   val POSSIBLE_SUBHEAD_RE = new Regex("[0-9]+\\.[0-9]+")
@@ -77,10 +84,14 @@ object DocExtractor extends FeatureExtractor {
       val paragraphs = (0 until documentLength).map(document.getRange.getParagraph(_))
 
       val fontSizes = paragraphs.map(estimateFontSize)
-      val largestFontSize = fontSizes.max
+
       val mainFontSize: Int = fontSizes.foldLeft(Map[Int, Int]().withDefaultValue(0)) {
         (m, i) => m + (i -> (m(i) + 1))
       }.toSeq.maxBy(_._2)._1
+
+      val largestFontSizes =
+        fontSizes.distinct.sorted.reverse.takeWhile(_ > mainFontSize).take(DISTINCT_SIZES)
+
 
       paragraphs.foldLeft((Vector[Paragraph](), 0, None: Option[usermodel.Paragraph])){
         (acc, para) =>
@@ -93,10 +104,18 @@ object DocExtractor extends FeatureExtractor {
         val possibleEmail = text.contains("@")
         val possibleWeb = text.contains("http") || text.contains("www")
         val length = text.split(" ").length
-        val fontSize = if (fontSizes(index) < mainFontSize)
-                         Small
-                       else
-                         RelativeSize(fontSizes(index) - largestFontSize)
+        val currentFontSize = fontSizes(index)
+        val fontSize =
+          if (currentFontSize < mainFontSize)
+            Smaller
+          else if (currentFontSize == mainFontSize)
+            Common
+          else
+            largestFontSizes.zipWithIndex.find(_._1 == currentFontSize) match {
+              case None => Larger
+              case Some((_, index)) => RelativeSize(index)
+            }
+
         val isBold = estimateBold(para)
         val isItalic = estimateItalic(para)
         val isBullet = para.isInList
@@ -120,7 +139,8 @@ object DocExtractor extends FeatureExtractor {
           isBold,
           isItalic,
           isBullet,
-          isSameAsPrevious
+          isSameAsPrevious,
+          None
         )
 
         (processed :+ features, index + 1, Some(para))

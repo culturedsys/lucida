@@ -44,13 +44,33 @@ case class Paragraph(
   // Does this paragraph have the same font size, family, bold, italic, and alignment as
   // the previous?
 
-  isSameAsPrevious: Boolean
+  isSameAsPrevious: Boolean,
+
+  // The tag assigned to the paragraph, if any
+  tag: Option[Tag]
 )
 
 
 /**
-  * Represents a font size as a relative size, with small sizes all represented as Small
+  * Represents a font size as a relative size.
   */
 sealed trait FontSize
-case object Small extends FontSize
+
+/**
+  * The most common font size in the document.
+  */
+case object Common extends FontSize
+
+/**
+  * Any size smaller than the most common size.
+  */
+case object Smaller extends FontSize
+
+/**
+  * A size relative to the largest font size. RelativeSize(0) is the largest size,
+  * RelativeSize(1) the second largest size, etc. Luong et al. only record relative size data for
+  * the three largest font sizes. Everything else is recorded as a generic Larger size.
+  */
 final case class RelativeSize(size: Int) extends FontSize
+
+case object Larger extends FontSize

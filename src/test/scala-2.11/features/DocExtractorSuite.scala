@@ -50,32 +50,32 @@ class DocExtractorSuite extends FunSuite {
     assert(paragraphs(5).length === 8)
   }
 
-  test("Paragraph 6 should have a fontSize of 0") {
+  test("Paragraph 6 should have largest font size") {
     assert(paragraphs(6).fontSize === RelativeSize(0))
   }
 
-  test("Paragraph 7 should have a fontSize of -2") {
-    assert(paragraphs(7).fontSize === RelativeSize(-2))
+  test("Paragraph 7 should have second largest") {
+    assert(paragraphs(7).fontSize === RelativeSize(1))
   }
 
-  test("Paragraph 8 should have a fontSize of -4") {
-    assert(paragraphs(8).fontSize === RelativeSize(-4))
+  test("Paragraph 8 should have third largest font size") {
+    assert(paragraphs(8).fontSize === RelativeSize(2))
   }
 
-  test("Paragraph 9 should have a fontSize of -5") {
-    assert(paragraphs(9).fontSize === RelativeSize(-5))
+  test("Paragraph 9 should have a fontSize of Larger") {
+    assert(paragraphs(9).fontSize === Larger)
   }
 
-  test("Paragraph 10 should have a fontSize of -6") {
-    assert(paragraphs(10).fontSize === RelativeSize(-6))
+  test("Paragraph 10 should have a fontSize of Common") {
+    assert(paragraphs(10).fontSize === Common)
   }
 
-  test("Paragraph 11 should have a fontSize of Small") {
-    assert(paragraphs(11).fontSize === Small)
+  test("Paragraph 11 should have a fontSize of Smaller") {
+    assert(paragraphs(11).fontSize === Smaller)
   }
 
-  test("Paragraph 12 should have a fontSize of Small") {
-    assert(paragraphs(12).fontSize === Small)
+  test("Paragraph 12 should have a fontSize of Smaller") {
+    assert(paragraphs(12).fontSize === Smaller)
   }
 
   test("Paragraph 12 should not be bold") {
@@ -86,7 +86,7 @@ class DocExtractorSuite extends FunSuite {
     assert(paragraphs(13).isBold)
   }
 
-  test("parahraph 13 should not be italic") {
+  test("paragraph 13 should not be italic") {
     assert(!paragraphs(13).isItalic)
   }
 
