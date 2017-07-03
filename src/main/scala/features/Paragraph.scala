@@ -96,11 +96,23 @@ case object Larger extends FontSize
 object FontSize {
   implicit def ordering[A <: FontSize]: Ordering[A] = Ordering.fromLessThan { (x, y) =>
     (x, y) match {
+      // A RelativeSize n is the nth largest size, so one RelativeSize is smaller than another only
+      // if its index is *larger* (e.g., the 2nd largest size is smaller than the 1st largest).
       case (RelativeSize(a), RelativeSize(b)) => a > b
+
+      // Anything that is not a RelativeSize is smaller than any RelativeSize
       case (_, RelativeSize(_)) => true
+
+      // Larger is only smaller than RelativeSize, already handled above
+      // Common is smaller than RelativeSize (handled above) and Larger
       case (Common, Larger) => true
+
+      // Smaller is smaller than RelativeSize (handled above), Common, and Larger
       case (Smaller, Common) => true
       case (Smaller, Larger) => true
+
+      // The above are all the cases in which one size is smaller than another, so the remainder
+      // must be false.
       case _ => false
     }
   }
