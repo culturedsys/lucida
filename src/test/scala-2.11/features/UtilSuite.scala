@@ -1,5 +1,7 @@
 package features
 
+import java.util.Comparator
+
 import org.scalatest.FunSuite
 
 /**
@@ -55,5 +57,11 @@ class UtilSuite extends FunSuite {
     assert(Util.groupedWhile(from) == expected)
   }
 
+  test("groupedWhile with a custom equality function groups according to that function") {
+    val from = Seq((1, 1), (1, 2), (1, 3), (2, 1), (1, 1), (1, 2))
+    val expected = Seq(Seq((1, 1), (1, 2), (1, 3)), Seq((2, 1)), Seq((1, 1), (1, 2)))
+
+    assert(Util.groupedWhile(from)(Ordering.by(_._1)) === expected)
+  }
 
 }
