@@ -129,7 +129,9 @@ object DocExtractor extends FeatureExtractor {
               estimateAlignment(para) == estimateAlignment(lastPara)
         }
 
-        val features = Paragraph(position,
+        val features = Paragraph(
+          text.split(' ').take(10).mkString,
+          position,
           possibleSubhead,
           possibleSubSubhead,
           possibleEmail,

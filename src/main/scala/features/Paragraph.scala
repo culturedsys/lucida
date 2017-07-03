@@ -4,6 +4,10 @@ package features
   * A class representing the salient properties of a paragraph
   */
 case class Paragraph(
+  //A string used to identify the paragraph to human readers (it has no significance to the
+  // model); it should probably be the text of the paragraph, or part of it.
+  description: String,
+
   // Location in document (as 8ths of total length)
   location: Int,
 
@@ -22,9 +26,6 @@ case class Paragraph(
   // Length in words (this is the length of the whole paragraph, rather than the length of
   // a single line, as it is for Luoung et al.)
   length: Int,
-
-  // For formatting properties, I only consider formats that apply to the whole paragraph
-  // (I believe Luoung et al. employ a more complex hueristic to classify partial formatting)
 
   // The font size, in points sizes smaller than the largest in document, or Small if
   // smaller than the majority size of the document
