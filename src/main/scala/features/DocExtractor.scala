@@ -132,10 +132,18 @@ object DocExtractor extends FeatureExtractor {
         val features = Paragraph(
           text.split(' ').take(10).mkString,
           position,
-          possibleSubhead,
-          possibleSubSubhead,
-          possibleEmail,
-          possibleWeb,
+          if (possibleSubSubhead)
+            PossibleSubsubsection
+          else if (possibleSubhead)
+            PossibleSubsection
+          else
+            NumberOther,
+          if (possibleEmail)
+            PossibleEmail
+          else if (possibleWeb)
+            PossibleWeb
+          else
+            NetOther,
           length,
           fontSize,
           isBold,

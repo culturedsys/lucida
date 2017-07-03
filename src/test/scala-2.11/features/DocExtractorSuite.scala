@@ -19,31 +19,31 @@ class DocExtractorSuite extends FunSuite {
   val paragraphs = extracted.get
 
   test("Paragraph 0 should be a possibleSubhead") {
-    assert(paragraphs(0).possibleSubhead)
+    assert(paragraphs(0).numberHint === PossibleSubsection)
   }
 
   test("Paragraph 1 should be a possibleSubsubhead") {
-    assert(paragraphs(1).possibleSubsubhead)
+    assert(paragraphs(1).numberHint === PossibleSubsubsection)
   }
 
   test("Paragraph 1 should not be a possibleEmail") {
-    assert(!paragraphs(1).possibleEmail)
+    assert(paragraphs(1).netHint !== PossibleEmail)
   }
 
   test("Paragraph 2 should be a possibleEmail") {
-    assert(paragraphs(2).possibleEmail)
+    assert(paragraphs(2).netHint === PossibleEmail)
   }
 
   test("Paragraph 2 should not be a possibleWeb") {
-    assert(!paragraphs(2).possibleWeb)
+    assert(paragraphs(2).netHint !== PossibleWeb)
   }
 
   test("Paragraph 3 should be a possibleWeb") {
-    assert(paragraphs(3).possibleWeb)
+    assert(paragraphs(3).netHint === PossibleWeb)
   }
 
   test("Paragraph 4 should be a possibleWeb") {
-    assert(paragraphs(4).possibleWeb)
+    assert(paragraphs(4).netHint === PossibleWeb)
   }
 
   test("Paragraph 5 should have a length of 8") {

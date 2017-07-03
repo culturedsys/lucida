@@ -11,17 +11,12 @@ case class Paragraph(
   // Location in document (as 8ths of total length)
   location: Int,
 
-  // Contains what might be a subsection number, e.g 1.1
-  possibleSubhead: Boolean,
+  // A hint as to what kind of paragraph this might be, on the basis of the presence of numbers
+  numberHint: NumberHint,
 
-  // Contains what might be a subsubsection number, e.g. 1.1.1
-  possibleSubsubhead: Boolean,
-
-  // Contains @
-  possibleEmail: Boolean,
-
-  // Contains www or http
-  possibleWeb: Boolean,
+  // A hint as to whether this paragraph contains a network reference, based on the presence of @
+  // symbols and common web address elements.
+  netHint: NetHint,
 
   // Length in words (this is the length of the whole paragraph, rather than the length of
   // a single line, as it is for Luoung et al.)
@@ -75,3 +70,20 @@ case object Smaller extends FontSize
 final case class RelativeSize(size: Int) extends FontSize
 
 case object Larger extends FontSize
+
+/**
+  * Represents information that may be relevant, based on the presence of certain numeric patterns
+  */
+sealed trait NumberHint
+case object NumberOther extends NumberHint
+case object PossibleSubsection extends NumberHint
+case object PossibleSubsubsection extends NumberHint
+
+/**
+  * Represents information that may be relevant to whether the paragraph represents a network
+  * address.
+  */
+sealed trait NetHint
+case object NetOther extends NetHint
+case object PossibleEmail extends NetHint
+case object PossibleWeb extends NetHint
