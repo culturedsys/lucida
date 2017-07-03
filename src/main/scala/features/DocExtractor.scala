@@ -14,20 +14,6 @@ import scala.util.matching.Regex
 object DocExtractor extends FeatureExtractor {
 
   /**
-    * Paragraph position in document is scaled so that it is in a number of "bins" (rather than
-    * using absolute position, which would obviously not compare well between different length
-    * documents). Luoung et al. use 8 bins, which they report gave good results in experiments.
-    */
-  val POSITION_BINS = 8
-
-  /**
-    * Luong et al. only specifically pay attention to the largest three font sizes - everything
-    * else is grouped together as "Smaller", "Common", or "Larger". This constant controls
-    * how many of the largest sizes to pay attention to.
-    */
-   val DISTINCT_SIZES = 3
-
-  /**
     * Sequences of dotted numbers are used as a possible sign of sub and sub-subheads.
     */
   val POSSIBLE_SUBHEAD_RE = new Regex("[0-9]+\\.[0-9]+")
@@ -90,7 +76,7 @@ object DocExtractor extends FeatureExtractor {
       }.toSeq.maxBy(_._2)._1
 
       val largestFontSizes =
-        fontSizes.distinct.sorted.reverse.takeWhile(_ > mainFontSize).take(DISTINCT_SIZES)
+        fontSizes.distinct.sorted.reverse.takeWhile(_ > mainFontSize).take(Paragraph.DISTINCT_SIZES)
 
 
       paragraphs.foldLeft((Vector[Paragraph](), 0, None: Option[usermodel.Paragraph])){
@@ -98,12 +84,12 @@ object DocExtractor extends FeatureExtractor {
         val (processed, index, last) = acc
         val text = para.text()
 
-        val position = (index / documentLength) * POSITION_BINS
+        val position = (index / documentLength) * Paragraph.POSITION_BINS
         val possibleSubhead = POSSIBLE_SUBHEAD_RE.findFirstIn(text).isDefined
         val possibleSubSubhead = POSSIBLE_SUBSUBHEAD_RE.findFirstIn(text).isDefined
         val possibleEmail = text.contains("@")
         val possibleWeb = text.contains("http") || text.contains("www")
-        val length = text.split(" ").length
+        val length = math.min(text.split(" ").length, Paragraph.LENGTH_MAX)
         val currentFontSize = fontSizes(index)
         val fontSize =
           if (currentFontSize < mainFontSize)

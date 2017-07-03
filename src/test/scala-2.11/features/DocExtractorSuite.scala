@@ -46,8 +46,8 @@ class DocExtractorSuite extends FunSuite {
     assert(paragraphs(4).netHint === PossibleWeb)
   }
 
-  test("Paragraph 5 should have a length of 8") {
-    assert(paragraphs(5).length === 8)
+  test("Paragraph 5's length of 8 should be capped at 5") {
+    assert(paragraphs(5).length === 5)
   }
 
   test("Paragraph 6 should have largest font size") {

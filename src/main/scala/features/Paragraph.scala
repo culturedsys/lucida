@@ -46,6 +46,28 @@ case class Paragraph(
   tag: Option[Tag]
 )
 
+object Paragraph {
+
+  /**
+    * Paragraph position in document is scaled so that it is in a number of "bins" (rather than
+    * using absolute position, which would obviously not compare well between different length
+    * documents). Luoung et al. use 8 bins, which they report gave good results in experiments.
+    */
+  val POSITION_BINS = 8
+
+  /**
+    * Luong et al. only specifically pay attention to the largest three font sizes - everything
+    * else is grouped together as "Smaller", "Common", or "Larger". This constant controls
+    * how many of the largest sizes to pay attention to.
+    */
+  val DISTINCT_SIZES = 3
+
+  /**
+    * Luong et al. treat all lengths of 5 or longer as equivalent
+    */
+  val LENGTH_MAX = 5
+
+}
 
 /**
   * Represents a font size as a relative size.
@@ -70,6 +92,19 @@ case object Smaller extends FontSize
 final case class RelativeSize(size: Int) extends FontSize
 
 case object Larger extends FontSize
+
+object FontSize {
+  implicit def ordering[A <: FontSize]: Ordering[A] = Ordering.fromLessThan { (x, y) =>
+    (x, y) match {
+      case (RelativeSize(a), RelativeSize(b)) => a > b
+      case (_, RelativeSize(_)) => true
+      case (Common, Larger) => true
+      case (Smaller, Common) => true
+      case (Smaller, Larger) => true
+      case _ => false
+    }
+  }
+}
 
 /**
   * Represents information that may be relevant, based on the presence of certain numeric patterns

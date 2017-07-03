@@ -12,5 +12,5 @@ trait FeatureExtractor {
     * Produce a sequence of Paragraph representations, on the basis of information read from an
     * InputStream.
     */
-  def extract(inputStream: InputStream): Try[IndexedSeq[Paragraph]]
+  def extract(inputStream: InputStream): Try[Seq[Paragraph]]
 }
