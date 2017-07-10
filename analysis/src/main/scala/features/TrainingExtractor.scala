@@ -2,7 +2,7 @@ package features
 import java.io.InputStream
 
 import scala.io.Source
-import scala.util.Try
+import scala.util.{Success, Try}
 
 /**
   * Extract the document features we are interested in from the SectLabel labelled training data.
@@ -25,8 +25,11 @@ object TrainingExtractor extends FeatureExtractor {
   val RELATIVE_SIZE_RE = "xmlFontSize_largest-([0-9])".r
 
   override def extract(inputStream: InputStream): Try[Seq[Paragraph]] = Try {
-    val lines = Source.fromInputStream(inputStream).getLines().map(_.split(" ")).toIndexedSeq
-    Util.groupedWhile(lines)(Equiv.fromFunction { (first, second) =>
+    extract(Source.fromInputStream(inputStream).getLines().toSeq)
+  }
+
+  def extract(lines: Seq[String]): Seq[Paragraph] = {
+    Util.groupedWhile(lines.map(_.split(" ")))(Equiv.fromFunction { (first, second) =>
       // Consider two lines as in the same paragraph if they have the same tag and the second
       // line is not explicitly marked as the start of a new paragraph
       first(TAG) == second(TAG) && second(PARA_NEW) != "bi_xmlPara_new"
