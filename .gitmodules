@@ -1,0 +1,3 @@
+[submodule "analysis/imllib-spark"]
+	path = analysis/imllib-spark
+	url = git@github.com:kulturaveshchi/imllib-spark.git
