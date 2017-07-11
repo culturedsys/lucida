@@ -23,18 +23,52 @@ object TrainAndTest extends TrainBase {
     val sc = new SparkContext(conf)
 
     val trainingData = loadTrainingDate(sc, trainingPath)
-    var correct = 0
-    var tested = 0
+    val labels = trainingData.flatMap(_.sequence.map(_.label)).distinct.collect.sorted
 
-    for (_ <- 0 until repeats) {
+    //TODO: Tidy this up by breaking functionality up into named methods
+    val statistics = (0 until repeats).flatMap { _ =>
       val Array(train, test) = trainingData.randomSplit(Array(9, 1))
       val model = CRF.train(FeatureTemplate.templatesAsStrings(Features.templates), train)
       val prediction = model.predict(test)
-      tested += test.map(_.toArray.length).reduce(_ + _)
-      correct += test.zip(prediction).map { case (ts, ps) => ts.compare(ps) }.reduce(_ + _)
+
+      val trueByCategory = test.flatMap(_.sequence)
+                                .groupBy(_.label)
+                                .mapValues(_.size).collect
+      val predictedByCategory = prediction.flatMap(_.sequence)
+                                          .groupBy(_.label).mapValues(_.size)
+                                          .collect
+      val correctByCategory = test.zip(prediction).flatMap {
+        case (t, p) => t.sequence.zip(p.sequence)
+      }.filter {
+        case (t, p) => t.label == p.label
+      }.groupBy(_._1.label).mapValues(_.size).collect
+
+      def lookup(collection: Seq[(String, Int)], label: String): Int =
+        collection.find(_._1 == label).map(_._2).getOrElse(0)
+
+      labels.map { label =>
+        val nTrue = lookup(trueByCategory, label)
+        val nPredicted = lookup(predictedByCategory, label)
+        val nCorrect = lookup(correctByCategory, label)
+
+        (label, nTrue, nPredicted, nCorrect)
+      }
+    }.foldLeft(Map[String, (Int, Int, Int)]().withDefaultValue((0, 0, 0))) { (map, data) =>
+      val (label, nTrue, nPredicted, nCorrect) = data
+      val (oldTrue, oldPredicted, oldCorrect) = map(label)
+      map + (label -> (oldTrue + nTrue, oldPredicted + nPredicted, oldCorrect + nCorrect))
     }
 
-    println("Correctly predicted tags: " + correct + " / " + tested)
-  }
+    labels.foreach { label =>
+      val (nTrue, nPredicted, nCorrect) = statistics(label)
+      val precision = if (nPredicted == 0) nPredicted else nCorrect.toDouble / nPredicted
+      val recall = nCorrect.toDouble / nTrue
 
+      printf("%s: P=%1.2f R=%1.2f F1=%1.2f\n",
+        label,
+        precision,
+        recall,
+        2.0 * (precision * recall) / (precision + recall))
+    }
+  }
 }
