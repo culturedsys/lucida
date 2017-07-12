@@ -1,7 +1,10 @@
 package training
 
-import com.intel.imllib.crf.nlp.CRF
+import com.intel.imllib.crf.nlp.{CRF, Token}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
+import cats.Semigroup.combine
+import cats.instances.all._
 
 /**
   * Train a model, keeping some tagged data separate to use as test data; report statistics based
@@ -17,7 +20,11 @@ object TrainAndTest extends TrainBase {
 
     val trainingPath = args(0)
 
-    val repeats = if (args.length < 2) 1 else args(1).toInt
+    val repeats = if (args.length < 2) {
+      println("No repeats number supplied, assuming 1")
+      1
+    } else
+      args(1).toInt
 
     val conf = (new SparkConf).setAppName("TrainAndTest")
     val sc = new SparkContext(conf)
@@ -25,50 +32,59 @@ object TrainAndTest extends TrainBase {
     val trainingData = loadTrainingDate(sc, trainingPath)
     val labels = trainingData.flatMap(_.sequence.map(_.label)).distinct.collect.sorted
 
-    //TODO: Tidy this up by breaking functionality up into named methods
-    val statistics = (0 until repeats).flatMap { _ =>
+    // Divide the labelled data into two parts, using one to train a model and the rest to test
+    // that model. Return counts for the number of true, predicted, and correctly predicted
+    // tokens in each classification.
+    def trainAndTest: (Map[String, Int], Map[String, Int], Map[String, Int]) = {
       val Array(train, test) = trainingData.randomSplit(Array(9, 1))
       val model = CRF.train(FeatureTemplate.templatesAsStrings(Features.templates), train)
       val prediction = model.predict(test)
 
-      val trueByCategory = test.flatMap(_.sequence)
-                                .groupBy(_.label)
-                                .mapValues(_.size).collect
-      val predictedByCategory = prediction.flatMap(_.sequence)
-                                          .groupBy(_.label).mapValues(_.size)
-                                          .collect
-      val correctByCategory = test.zip(prediction).flatMap {
-        case (t, p) => t.sequence.zip(p.sequence)
-      }.filter {
+      // Tokens with their true labels attached
+      val trueTokens = test.flatMap(_.sequence)
+
+      // Tokens with their predicted labels attached
+      val predictedTokens = prediction.flatMap(_.sequence)
+
+      // Those tokens where the predicted label is correct, i.e., the same as the true label
+      val correctTokens = trueTokens.zip(predictedTokens).filter {
         case (t, p) => t.label == p.label
-      }.groupBy(_._1.label).mapValues(_.size).collect
+      }.map(_._1)
 
-      def lookup(collection: Seq[(String, Int)], label: String): Int =
-        collection.find(_._1 == label).map(_._2).getOrElse(0)
+      // Return a map from labels to how many elements in the collection of tokens have that label
+      def sizeByCategory(tokens: RDD[Token]): Map[String, Int] =
+        tokens.groupBy(_.label).mapValues(_.size).collect.toMap
 
-      labels.map { label =>
-        val nTrue = lookup(trueByCategory, label)
-        val nPredicted = lookup(predictedByCategory, label)
-        val nCorrect = lookup(correctByCategory, label)
-
-        (label, nTrue, nPredicted, nCorrect)
-      }
-    }.foldLeft(Map[String, (Int, Int, Int)]().withDefaultValue((0, 0, 0))) { (map, data) =>
-      val (label, nTrue, nPredicted, nCorrect) = data
-      val (oldTrue, oldPredicted, oldCorrect) = map(label)
-      map + (label -> (oldTrue + nTrue, oldPredicted + nPredicted, oldCorrect + nCorrect))
+      (sizeByCategory(trueTokens), sizeByCategory(predictedTokens), sizeByCategory(correctTokens))
     }
 
-    labels.foreach { label =>
-      val (nTrue, nPredicted, nCorrect) = statistics(label)
-      val precision = if (nPredicted == 0) nPredicted else nCorrect.toDouble / nPredicted
-      val recall = nCorrect.toDouble / nTrue
+    val defaultMap = Map[String, Int]()
 
-      printf("%s: P=%1.2f R=%1.2f F1=%1.2f\n",
-        label,
-        precision,
-        recall,
-        2.0 * (precision * recall) / (precision + recall))
+    // Run `trainAndTest` `repeats` times and aggregate the statistics
+    val (trueByCategory, predictedByCategory, correctByCategory) =
+      (0 until repeats)
+        .foldLeft((defaultMap, defaultMap, defaultMap)) {
+          (runningTotals, _) =>
+            combine(runningTotals, trainAndTest)
+        }
+
+    labels.foreach { label =>
+      val nTrue = trueByCategory.getOrElse(label, 0)
+      val nPredicted = predictedByCategory.getOrElse(label, 0)
+      val nCorrect = correctByCategory.getOrElse(label, 0)
+
+      if (nPredicted == 0 || nTrue == 0)
+        println(s"$label: No result")
+      else {
+        val precision = nCorrect.toDouble / nPredicted
+        val recall = nCorrect.toDouble / nTrue
+
+        printf("%s: P=%1.2f R=%1.2f F1=%1.2f\n",
+          label,
+          precision,
+          recall,
+          2.0 * (precision * recall) / (precision + recall))
+      }
     }
   }
 }
