@@ -1,5 +1,7 @@
 package training
 
+import java.io.{File, FileNotFoundException, PrintStream}
+
 import com.intel.imllib.crf.nlp.{CRF, Token}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
@@ -20,11 +22,17 @@ object TrainAndTest extends TrainBase {
 
     val trainingPath = args(0)
 
-    val repeats = if (args.length < 2) {
+    val resultsPath = if (args.length < 2) {
+      println("No results path specified, printing to standard output")
+      None
+    } else
+      Some(args(1))
+
+    val repeats = if (args.length < 3) {
       println("No repeats number supplied, assuming 1")
       1
     } else
-      args(1).toInt
+      args(2).toInt
 
     val conf = (new SparkConf).setAppName("TrainAndTest")
     val sc = new SparkContext(conf)
@@ -58,33 +66,65 @@ object TrainAndTest extends TrainBase {
       (sizeByCategory(trueTokens), sizeByCategory(predictedTokens), sizeByCategory(correctTokens))
     }
 
-    val defaultMap = Map[String, Int]()
-
-    // Run `trainAndTest` `repeats` times and aggregate the statistics
-    val (trueByCategory, predictedByCategory, correctByCategory) =
-      (0 until repeats)
-        .foldLeft((defaultMap, defaultMap, defaultMap)) {
-          (runningTotals, _) =>
-            combine(runningTotals, trainAndTest)
+    val resultsStream: Option[PrintStream] = resultsPath match {
+      case None => Some(System.out)
+      case Some(path) => {
+        try {
+          Some(new PrintStream(path))
+        } catch {
+          case _: FileNotFoundException =>
+            println(s"File $path cannot be opened for writing")
+            None
         }
+      }
+    }
 
+    resultsStream.foreach { rs =>
+      val defaultMap = Map[String, Int]()
+
+      // Run `trainAndTest` `repeats` times and aggregate the statistics
+      val total =
+        (0 until repeats)
+          .foldLeft((defaultMap, defaultMap, defaultMap)) {
+            (runningTotals, iteration) =>
+              val results = trainAndTest
+              rs.println(s"--$iteration")
+              output(results, labels, rs)
+              combine(runningTotals, results)
+          }
+
+      rs.println("--TOTAL")
+      output(total, labels, rs)
+    }
+  }
+
+  /**
+    * Output the precision, recall, and F1 for each label in the supplied results set.
+    *
+    * @param results A tuple of maps, from label to true count, predicted count, and correctly
+    *                predicted count, respectively
+    * @param labels All labels to print results for
+    * @param stream The stream to print output to
+    */
+  def output(results: (Map[String, Int], Map[String, Int], Map[String, Int]),
+             labels: Seq[String],
+             stream: PrintStream): Unit = {
+    val (trueByCategory, predictedByCategory, correctByCategory) = results
     labels.foreach { label =>
       val nTrue = trueByCategory.getOrElse(label, 0)
       val nPredicted = predictedByCategory.getOrElse(label, 0)
       val nCorrect = correctByCategory.getOrElse(label, 0)
 
       if (nPredicted == 0 || nTrue == 0)
-        println(s"$label: No result")
+        stream.println(s"$label: No result")
       else {
         val precision = nCorrect.toDouble / nPredicted
         val recall = nCorrect.toDouble / nTrue
+        val f1 = 2.0 * (precision * recall) / (precision + recall)
 
-        printf("%s: P=%1.2f R=%1.2f F1=%1.2f\n",
-          label,
-          precision,
-          recall,
-          2.0 * (precision * recall) / (precision + recall))
+        stream.print(f"$label: P=$precision%1.2f R=$recall%1.2f F1=$f1%1.2f\n")
       }
     }
   }
+
 }
