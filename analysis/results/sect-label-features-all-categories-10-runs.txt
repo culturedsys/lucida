@@ -1,0 +1,264 @@
+--0
+address: P=1.00 R=0.80 F1=0.89
+affiliation: P=0.95 R=0.62 F1=0.75
+author: P=0.90 R=0.60 F1=0.72
+bodyText: P=0.83 R=0.85 F1=0.84
+category: No result
+construct: No result
+copyright: P=0.61 R=0.92 F1=0.73
+email: P=1.00 R=1.00 F1=1.00
+equation: P=0.61 R=0.43 F1=0.50
+figure: P=0.38 R=0.57 F1=0.46
+figureCaption: P=0.32 R=0.18 F1=0.23
+footnote: P=1.00 R=0.24 F1=0.38
+keyword: P=0.67 R=0.22 F1=0.33
+listItem: P=0.87 R=0.70 F1=0.77
+note: P=0.67 R=0.67 F1=0.67
+page: P=0.81 R=0.76 F1=0.78
+reference: P=0.95 R=0.99 F1=0.97
+sectionHeader: P=0.67 R=0.83 F1=0.74
+subsectionHeader: P=0.66 R=0.73 F1=0.69
+subsubsectionHeader: P=0.87 R=0.68 F1=0.76
+table: P=0.32 R=0.36 F1=0.34
+tableCaption: P=0.15 R=0.16 F1=0.15
+title: P=0.80 R=0.89 F1=0.84
+--1
+address: P=1.00 R=1.00 F1=1.00
+affiliation: P=1.00 R=1.00 F1=1.00
+author: P=1.00 R=1.00 F1=1.00
+bodyText: P=0.80 R=0.86 F1=0.83
+category: No result
+construct: P=0.00 R=0.00 F1=NaN
+copyright: P=1.00 R=0.88 F1=0.93
+email: P=1.00 R=1.00 F1=1.00
+equation: P=0.30 R=0.22 F1=0.25
+figure: P=0.65 R=0.79 F1=0.71
+figureCaption: P=0.36 R=0.23 F1=0.28
+footnote: P=0.00 R=0.00 F1=NaN
+keyword: P=0.33 R=0.20 F1=0.25
+listItem: P=0.87 R=0.64 F1=0.74
+note: P=0.90 R=0.68 F1=0.78
+page: P=0.90 R=0.74 F1=0.81
+reference: P=0.91 R=0.92 F1=0.91
+sectionHeader: P=0.79 R=0.85 F1=0.82
+subsectionHeader: P=0.76 R=0.60 F1=0.67
+subsubsectionHeader: P=0.92 R=0.48 F1=0.63
+table: P=0.20 R=0.45 F1=0.28
+tableCaption: P=0.46 R=0.55 F1=0.50
+title: P=0.86 R=1.00 F1=0.92
+--2
+address: P=0.83 R=0.63 F1=0.71
+affiliation: P=0.62 R=0.53 F1=0.57
+author: P=0.73 R=0.57 F1=0.64
+bodyText: P=0.75 R=0.89 F1=0.81
+category: No result
+construct: No result
+copyright: P=0.75 R=0.15 F1=0.25
+email: P=1.00 R=0.82 F1=0.90
+equation: P=0.37 R=0.30 F1=0.33
+figure: P=0.60 R=0.80 F1=0.69
+figureCaption: P=0.37 R=0.23 F1=0.28
+footnote: P=0.46 R=0.21 F1=0.29
+keyword: P=0.00 R=0.00 F1=NaN
+listItem: P=0.62 R=0.80 F1=0.70
+note: P=0.53 R=0.38 F1=0.44
+page: P=0.76 R=0.55 F1=0.64
+reference: P=0.84 R=0.98 F1=0.90
+sectionHeader: P=0.70 R=0.78 F1=0.74
+subsectionHeader: P=0.71 R=0.67 F1=0.69
+subsubsectionHeader: P=0.82 R=0.82 F1=0.82
+table: P=0.48 R=0.09 F1=0.15
+tableCaption: P=0.28 R=0.15 F1=0.19
+title: P=0.70 R=0.47 F1=0.56
+--3
+address: P=0.75 R=0.75 F1=0.75
+affiliation: P=0.67 R=0.38 F1=0.48
+author: P=0.70 R=0.41 F1=0.52
+bodyText: P=0.83 R=0.83 F1=0.83
+category: No result
+construct: No result
+copyright: P=0.38 R=0.83 F1=0.53
+email: P=1.00 R=1.00 F1=1.00
+equation: P=0.00 R=0.00 F1=NaN
+figure: P=0.40 R=0.59 F1=0.47
+figureCaption: P=0.55 R=0.27 F1=0.36
+footnote: P=0.25 R=0.17 F1=0.20
+keyword: P=0.25 R=0.20 F1=0.22
+listItem: P=0.75 R=0.83 F1=0.79
+note: P=0.70 R=0.51 F1=0.59
+page: P=0.93 R=0.83 F1=0.88
+reference: P=0.82 R=1.00 F1=0.90
+sectionHeader: P=0.82 R=0.66 F1=0.73
+subsectionHeader: P=0.57 R=0.77 F1=0.66
+subsubsectionHeader: P=1.00 R=0.60 F1=0.75
+table: P=0.09 R=0.09 F1=0.09
+tableCaption: P=0.14 R=0.14 F1=0.14
+title: P=0.40 R=1.00 F1=0.57
+--4
+address: P=0.75 R=0.60 F1=0.67
+affiliation: P=0.50 R=0.36 F1=0.42
+author: P=1.00 R=0.63 F1=0.77
+bodyText: P=0.84 R=0.84 F1=0.84
+category: No result
+construct: No result
+copyright: P=1.00 R=0.57 F1=0.73
+email: P=1.00 R=1.00 F1=1.00
+equation: No result
+figure: P=0.79 R=0.88 F1=0.83
+figureCaption: P=0.59 R=0.31 F1=0.41
+footnote: P=0.78 R=0.47 F1=0.58
+keyword: No result
+listItem: P=0.81 R=0.87 F1=0.84
+note: P=0.57 R=0.33 F1=0.42
+page: P=0.89 R=0.94 F1=0.92
+reference: P=0.88 R=1.00 F1=0.94
+sectionHeader: P=0.67 R=0.67 F1=0.67
+subsectionHeader: P=0.56 R=0.54 F1=0.55
+subsubsectionHeader: P=1.00 R=0.71 F1=0.83
+table: P=0.00 R=0.00 F1=NaN
+tableCaption: P=0.00 R=0.00 F1=NaN
+title: P=0.67 R=0.40 F1=0.50
+--5
+address: P=0.86 R=0.86 F1=0.86
+affiliation: P=0.88 R=0.79 F1=0.83
+author: P=0.94 R=0.84 F1=0.89
+bodyText: P=0.82 R=0.84 F1=0.83
+category: No result
+construct: P=0.00 R=0.00 F1=NaN
+copyright: P=0.83 R=0.31 F1=0.45
+email: P=0.93 R=0.93 F1=0.93
+equation: P=0.76 R=0.23 F1=0.36
+figure: P=0.66 R=0.88 F1=0.76
+figureCaption: P=0.59 R=0.18 F1=0.28
+footnote: P=0.81 R=0.30 F1=0.44
+keyword: P=0.60 R=0.27 F1=0.37
+listItem: P=0.75 R=0.65 F1=0.70
+note: P=0.55 R=0.41 F1=0.47
+page: P=0.78 R=0.78 F1=0.78
+reference: P=0.87 R=0.94 F1=0.90
+sectionHeader: P=0.74 R=0.84 F1=0.78
+subsectionHeader: P=0.80 R=0.55 F1=0.65
+subsubsectionHeader: P=0.89 R=0.65 F1=0.76
+table: P=0.31 R=0.58 F1=0.40
+tableCaption: P=0.16 R=0.35 F1=0.22
+title: P=0.77 R=0.77 F1=0.77
+--6
+address: P=0.75 R=0.86 F1=0.80
+affiliation: P=0.73 R=0.65 F1=0.69
+author: P=0.87 R=0.72 F1=0.79
+bodyText: P=0.84 R=0.80 F1=0.82
+category: No result
+construct: No result
+copyright: P=0.89 R=0.57 F1=0.70
+email: P=0.91 R=0.77 F1=0.83
+equation: P=0.47 R=0.59 F1=0.53
+figure: P=0.57 R=0.65 F1=0.61
+figureCaption: P=0.55 R=0.21 F1=0.31
+footnote: P=0.40 R=0.29 F1=0.33
+keyword: P=0.50 R=0.22 F1=0.31
+listItem: P=0.90 R=0.68 F1=0.78
+note: P=0.63 R=0.42 F1=0.50
+page: P=0.84 R=0.72 F1=0.77
+reference: P=0.89 R=0.99 F1=0.94
+sectionHeader: P=0.64 R=0.80 F1=0.71
+subsectionHeader: P=0.72 R=0.65 F1=0.68
+subsubsectionHeader: P=0.77 R=0.67 F1=0.71
+table: P=0.41 R=0.71 F1=0.52
+tableCaption: P=0.30 R=0.29 F1=0.29
+title: P=0.73 R=0.67 F1=0.70
+--7
+address: P=1.00 R=0.50 F1=0.67
+affiliation: P=0.50 R=0.21 F1=0.30
+author: P=0.50 R=0.27 F1=0.35
+bodyText: P=0.67 R=0.79 F1=0.72
+category: No result
+construct: No result
+copyright: P=0.20 R=0.33 F1=0.25
+email: P=1.00 R=0.50 F1=0.67
+equation: P=0.00 R=0.00 F1=NaN
+figure: P=0.09 R=0.77 F1=0.17
+figureCaption: P=0.15 R=0.10 F1=0.12
+footnote: P=0.00 R=0.00 F1=NaN
+keyword: P=1.00 R=0.17 F1=0.29
+listItem: No result
+note: P=0.45 R=0.24 F1=0.31
+page: P=1.00 R=0.64 F1=0.78
+reference: P=0.95 R=0.99 F1=0.97
+sectionHeader: P=0.84 R=0.80 F1=0.82
+subsectionHeader: P=0.88 R=0.82 F1=0.85
+subsubsectionHeader: No result
+table: P=0.71 R=0.09 F1=0.15
+tableCaption: P=0.83 R=0.10 F1=0.18
+title: P=0.50 R=0.80 F1=0.62
+--8
+address: P=1.00 R=1.00 F1=1.00
+affiliation: P=0.38 R=0.75 F1=0.50
+author: P=0.50 R=1.00 F1=0.67
+bodyText: P=0.72 R=0.88 F1=0.79
+category: No result
+construct: No result
+copyright: P=1.00 R=0.75 F1=0.86
+email: P=1.00 R=1.00 F1=1.00
+equation: P=0.00 R=0.00 F1=NaN
+figure: P=0.73 R=0.94 F1=0.82
+figureCaption: P=0.50 R=0.17 F1=0.25
+footnote: P=1.00 R=0.11 F1=0.20
+keyword: P=0.00 R=0.00 F1=NaN
+listItem: P=1.00 R=0.38 F1=0.56
+note: P=0.83 R=0.71 F1=0.77
+page: P=0.92 R=0.73 F1=0.81
+reference: P=0.64 R=0.85 F1=0.73
+sectionHeader: P=0.87 R=0.54 F1=0.67
+subsectionHeader: P=0.56 R=1.00 F1=0.71
+subsubsectionHeader: No result
+table: P=0.50 R=0.33 F1=0.40
+tableCaption: P=1.00 R=0.33 F1=0.50
+title: P=1.00 R=1.00 F1=1.00
+--9
+address: P=0.67 R=1.00 F1=0.80
+affiliation: P=1.00 R=1.00 F1=1.00
+author: P=0.86 R=1.00 F1=0.92
+bodyText: P=0.78 R=0.94 F1=0.85
+category: No result
+construct: No result
+copyright: P=1.00 R=0.57 F1=0.73
+email: P=1.00 R=1.00 F1=1.00
+equation: P=0.17 R=0.41 F1=0.24
+figure: P=0.88 R=0.68 F1=0.77
+figureCaption: P=0.47 R=0.17 F1=0.25
+footnote: P=1.00 R=0.04 F1=0.08
+keyword: P=1.00 R=0.40 F1=0.57
+listItem: P=0.65 R=0.59 F1=0.62
+note: P=0.67 R=0.47 F1=0.55
+page: P=0.81 R=0.79 F1=0.80
+reference: P=1.00 R=0.99 F1=0.99
+sectionHeader: P=0.88 R=0.95 F1=0.91
+subsectionHeader: P=0.76 R=0.94 F1=0.84
+subsubsectionHeader: P=0.91 R=1.00 F1=0.95
+table: P=0.00 R=0.00 F1=NaN
+tableCaption: P=0.00 R=0.00 F1=NaN
+title: P=1.00 R=1.00 F1=1.00
+--TOTAL
+address: P=0.87 R=0.80 F1=0.83
+affiliation: P=0.76 R=0.60 F1=0.67
+author: P=0.82 R=0.65 F1=0.72
+bodyText: P=0.80 R=0.85 F1=0.82
+category: No result
+construct: P=0.00 R=0.00 F1=NaN
+copyright: P=0.67 R=0.52 F1=0.58
+email: P=0.98 R=0.91 F1=0.95
+equation: P=0.42 R=0.30 F1=0.35
+figure: P=0.59 R=0.76 F1=0.67
+figureCaption: P=0.44 R=0.21 F1=0.28
+footnote: P=0.52 R=0.22 F1=0.31
+keyword: P=0.46 R=0.18 F1=0.26
+listItem: P=0.79 R=0.68 F1=0.73
+note: P=0.63 R=0.46 F1=0.53
+page: P=0.83 R=0.74 F1=0.78
+reference: P=0.89 R=0.97 F1=0.93
+sectionHeader: P=0.73 R=0.80 F1=0.76
+subsectionHeader: P=0.70 R=0.68 F1=0.69
+subsubsectionHeader: P=0.86 R=0.67 F1=0.75
+table: P=0.31 R=0.28 F1=0.29
+tableCaption: P=0.23 R=0.20 F1=0.21
+title: P=0.70 R=0.75 F1=0.72
