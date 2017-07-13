@@ -46,6 +46,38 @@ class TrainingExtractorSuite extends FunSuite {
     assert(!paras(0).isSameAsPrevious)
   }
 
+  test("First paragraph's first token should be 'Heterogeneous'") {
+    assert(paras(0).words(0).word === "Heterogeneous")
+  }
+
+  test("First paragraph's first token's lower case should be 'heterogeneous'") {
+    assert(paras(0).words(0).lowerCase === "heterogeneous")
+  }
+
+  test("First paragraph's first token w/o punctuation should be 'heterogeneous'") {
+    assert(paras(0).words(0).unpunctuated === "heterogeneous")
+  }
+
+  test("First paragraph's first token has an initial capital") {
+    assert(paras(0).words(0).wordCase === InitialCaps)
+  }
+
+  test("First paragraph's first token has no digits") {
+    assert(paras(0).words(0).digits === NoDigits)
+  }
+
+  test("Paragraph 3's first token should be 'qyang@cs.ust.hk'") {
+    assert(paras(3).words(0).word === "qyang@cs.ust.hk")
+  }
+
+  test("Pargraph 3's first token w/o punctuation should be 'qyangcsusthk'") {
+    assert(paras(3).words(0).unpunctuated === "qyangcsusthk")
+  }
+
+  test("Paragraph 3's second token should be 'EMPTY'") {
+    assert(paras(3).words(1).word === "EMPTY")
+  }
+
   test("Paragraph 7 should be a section header") {
     assert(paras(7).tag.get === SectionHeader)
   }
@@ -83,5 +115,9 @@ class TrainingExtractorSuite extends FunSuite {
 
   test("Paragraph 21 should not have same format as previous") {
     assert(!paras(21).isSameAsPrevious)
+  }
+
+  test("Paragraph 9's first token should have one digit") {
+    assert(paras(9).words(0).digits === JustDigits(1))
   }
 }

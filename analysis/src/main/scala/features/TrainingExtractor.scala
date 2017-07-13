@@ -2,7 +2,7 @@ package features
 import java.io.InputStream
 
 import scala.io.Source
-import scala.util.{Success, Try}
+import scala.util.Try
 
 /**
   * Extract the document features we are interested in from the SectLabel labelled training data.
@@ -20,6 +20,13 @@ object TrainingExtractor extends FeatureExtractor {
   val BULLET = 12
   val SAME = 13
   val PARA_NEW = 14
+
+  val FIRST_TOKEN = 15
+  val TOKEN_CASE = 12
+  val TOKEN_PUNCT = 21
+  val TOKEN_NUMBER = 13
+  val TOKEN_LENGTH = 22
+
   val TAG = 103
 
   val RELATIVE_SIZE_RE = "xmlFontSize_largest-([0-9])".r
@@ -34,6 +41,10 @@ object TrainingExtractor extends FeatureExtractor {
       // line is not explicitly marked as the start of a new paragraph
       first(TAG) == second(TAG) && second(PARA_NEW) != "bi_xmlPara_new"
     }).map { lines =>
+
+      // Extract the word-level tokens from the first line (as we only need 4
+      val words = extractWords(lines.head)
+
       // Convert the string POS-n to the number n
       val location = lines.head(LOCATION).substring(4).toInt
 
@@ -76,6 +87,7 @@ object TrainingExtractor extends FeatureExtractor {
 
       Paragraph(
         lines.head(DESCRIPTION),
+        words,
         location,
         numberHint,
         netHint,
@@ -87,6 +99,33 @@ object TrainingExtractor extends FeatureExtractor {
         isSameAsPrevious,
         Tag.fromString.lift(lines.head(TAG))
       )
+    }
+  }
+
+  def extractWords(attributes: Array[String]): Seq[Word] = {
+    (0 until Paragraph.WORDS).map { index =>
+      val base = FIRST_TOKEN + TOKEN_LENGTH * index
+      val word = attributes(base).replaceFirst("^TOKEN-", "")
+      val lowerCase = word.toLowerCase
+      val unpunctuated = lowerCase.filter(_.isLetterOrDigit)
+      val wordCase = attributes(base + TOKEN_CASE) match {
+        case "InitCap" => InitialCaps
+        case "singleCap" => InitialCaps
+        case "AllCap" => AllCaps
+        case "MixedCap" => MixedCaps
+        case _ => OtherCaps
+      }
+      val digits = attributes(base + TOKEN_NUMBER) match {
+        case "1dig" => JustDigits(1)
+        case "2dig" => JustDigits(2)
+        case "3dig" => JustDigits(3)
+        case "4+dig" => JustDigits(4)
+        case "hasDig" => HasDigits
+        case "nonNum" => NoDigits
+        case _ => OtherDigits
+      }
+
+      Word(word, lowerCase, unpunctuated, wordCase, digits)
     }
   }
 }

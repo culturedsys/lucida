@@ -8,6 +8,9 @@ case class Paragraph(
   // model); it should probably be the text of the paragraph, or part of it.
   description: String,
 
+  // Features of the first N words
+  words: Seq[Word],
+
   // Location in document (as 8ths of total length)
   location: Int,
 
@@ -47,6 +50,11 @@ case class Paragraph(
 )
 
 object Paragraph {
+
+  /**
+    * The number of words to sample from each paragraph. Following Luoung et al., this is set to 4.
+    */
+  val WORDS = 4
 
   /**
     * Paragraph position in document is scaled so that it is in a number of "bins" (rather than
@@ -134,3 +142,71 @@ sealed trait NetHint
 case object NetOther extends NetHint
 case object PossibleEmail extends NetHint
 case object PossibleWeb extends NetHint
+
+/**
+  * A class representing the salient properties of a word
+  */
+case class Word(
+  word: String,
+  lowerCase: String,
+  unpunctuated: String,
+  wordCase: WordCase,
+  digits: Digits
+  ) {
+}
+
+object Word {
+  def apply(word: String): Word = {
+    val lowerCase = word.toLowerCase
+    val unpunctuated = lowerCase.filter(_.isLetterOrDigit)
+    val wordCase =
+      if (word.forall(_.isUpper))
+        AllCaps
+      else if (word.substring(1).exists(_.isUpper))
+        MixedCaps
+      else if (word(0).isUpper)
+        InitialCaps
+      else
+        OtherCaps
+    val digitCount = word.count(_.isDigit)
+    val digits =
+      if (digitCount == word.length)
+        JustDigits(math.min(4, digitCount))
+      else if (digitCount > 0)
+        HasDigits
+      else
+        NoDigits
+
+
+    Word(word, lowerCase, unpunctuated, wordCase, digits)
+  }
+}
+
+/**
+  * Represents the capitalization of a word:
+  *
+  * AllCaps - entire token is capital letters
+  * MixedCaps - some upper case and some lower case
+  * InitialCaps - first character is capital, rest lower
+  * OtherCaps - anything which does not fit
+  */
+sealed trait WordCase
+case object AllCaps extends WordCase
+case object InitialCaps extends WordCase
+case object MixedCaps extends WordCase
+case object OtherCaps extends WordCase
+
+/**
+  * Represents the presence of numbers
+  *
+  * JustDigits(n) - solely digits, and n (up to a maximum of 4) of them
+  * HasDigits - contain digits along with non-digit characters
+  * NoDigits - no digits
+  * OtherDigits - some other condition
+  */
+sealed trait Digits
+final case class JustDigits(count: Int) extends Digits
+case object HasDigits extends Digits
+case object NoDigits extends Digits
+case object OtherDigits extends Digits
+

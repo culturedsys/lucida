@@ -84,6 +84,8 @@ object DocExtractor extends FeatureExtractor {
         val (processed, index, last) = acc
         val text = para.text()
 
+        val words = extractWords(text)
+
         val position = (index / documentLength) * Paragraph.POSITION_BINS
         val possibleSubhead = POSSIBLE_SUBHEAD_RE.findFirstIn(text).isDefined
         val possibleSubSubhead = POSSIBLE_SUBSUBHEAD_RE.findFirstIn(text).isDefined
@@ -117,6 +119,7 @@ object DocExtractor extends FeatureExtractor {
 
         val features = Paragraph(
           text.split(' ').take(10).mkString,
+          words,
           position,
           if (possibleSubSubhead)
             PossibleSubsubsection
@@ -143,5 +146,11 @@ object DocExtractor extends FeatureExtractor {
       }._1
     }
 
+    def extractWords(text: String): Seq[Word] = {
+      // We need exactly Paragraph.WORDS words, adding the word EMPTY if necessary
+      val paddedWords = (text.trim.split(" ") ++ Seq.fill(Paragraph.WORDS)("EMPTY")).take(Paragraph
+        .WORDS)
 
+      paddedWords.map(Word(_))
+    }
 }

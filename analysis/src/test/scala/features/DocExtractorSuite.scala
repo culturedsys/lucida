@@ -144,4 +144,59 @@ class DocExtractorSuite extends FunSuite {
     assert(paragraphs(26).fontSize == RelativeSize(0))
   }
 
+  test("Paragraph 27's first word should be 'Initcap!'") {
+    assert(paragraphs(27).words(0).word === "Initcap!")
+  }
+
+  test("Paragraphs 27's first word in lower case should be 'initcap!'") {
+    assert(paragraphs(27).words(0).lowerCase === "initcap!")
+  }
+
+  test("Paragraph 27's first word without punctuation should be 'initcap'") {
+    assert(paragraphs(27).words(0).unpunctuated === "initcap")
+  }
+
+  test("Paragraph 27's first word should be in initial caps") {
+    assert(paragraphs(27).words(0).wordCase === InitialCaps)
+  }
+
+  test("Paragraph 27's second word should be in all caps") {
+    assert(paragraphs(27).words(1).wordCase === AllCaps)
+  }
+
+  test("Paragraph 27's third word should be in mixed caps") {
+    assert(paragraphs(27).words(2).wordCase === MixedCaps)
+  }
+
+  test("Paragraph 27's fourth word should be in other caps") {
+    assert(paragraphs(27).words(3).wordCase === OtherCaps)
+  }
+
+  test("Paragraph 28's first word has digits") {
+    assert(paragraphs(28).words(0).digits == HasDigits)
+  }
+
+  test("Paragraph 28's second word has 1 digit") {
+    assert(paragraphs(28).words(1).digits === JustDigits(1))
+  }
+
+  test("Paragraph 28's third word has 2 digits") {
+    assert(paragraphs(28).words(2).digits === JustDigits(2))
+  }
+
+  test("Paragraph 28's fourth word has 3 digits") {
+    assert(paragraphs(28).words(3).digits === JustDigits(3))
+  }
+
+  test("Paragraph 29's first word has 4 digits") {
+    assert(paragraphs(29).words(0).digits === JustDigits(4))
+  }
+
+  test("Paragraph 29's second word has more than 4 digits, capped to 4") {
+    assert(paragraphs(29).words(1).digits === JustDigits(4))
+  }
+
+  test("Paragraph 29's third word is EMPTY") {
+    assert(paragraphs(29).words(2).word === "EMPTY")
+  }
 }
