@@ -45,7 +45,8 @@ object TrainAndTest extends TrainBase {
     // tokens in each classification.
     def trainAndTest: (Map[String, Int], Map[String, Int], Map[String, Int]) = {
       val Array(train, test) = trainingData.randomSplit(Array(9, 1))
-      val model = CRF.train(FeatureTemplate.templatesAsStrings(Features.templates), train)
+      val templates = FeatureTemplate.templatesAsStrings(Features.templates, unqualifiedBigram=true)
+      val model = CRF.train(templates, train)
       val prediction = model.predict(test)
 
       // Tokens with their true labels attached

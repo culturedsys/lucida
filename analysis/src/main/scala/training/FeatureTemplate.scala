@@ -36,12 +36,22 @@ object FeatureTemplate {
     * Convert a sequence of FeatureTemplate objects into an array of CRF++ feature template
     * strings. Assumes that the n'th template refers to the n'th tag, so will only work in simple
     * cases.
+    *
+    * @param templates a sequence of feature template specifications
+    * @param unqualifiedBigram if true, add a template for a bigram with no dependence on any
+    *                          particular attribute
     */
-  def templatesAsStrings[A](templates: Seq[FeatureTemplate[A]]): Array[String] = {
-    templates.zipWithIndex.map {
+  def templatesAsStrings[A](templates: Seq[FeatureTemplate[A]],
+                            unqualifiedBigram: Boolean = false): Array[String] = {
+
+    val templateStrings = templates.zipWithIndex.map {
       case (template, index) =>
         s"${template.tag}$index:%x[${template.relative},$index]"
-    }.toArray
+    }
+    (if (unqualifiedBigram)
+      templateStrings :+ "B"
+    else
+      templateStrings).toArray
   }
 
   /**
