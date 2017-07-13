@@ -19,6 +19,14 @@ trait FeatureTemplate[A] {
     * to the current token.
     */
   def relative: Int
+
+  /**
+    * Returns a tag representing the type of template (`U` for unigrams, `B` for bigrams)
+    */
+  def tag: String = this match {
+    case Unigram(_, _) => "U"
+    case Bigram(_, _) => "B"
+  }
 }
 case class Unigram[A](extractor: A => Any, relative: Int = 0) extends FeatureTemplate[A]
 case class Bigram[A](extractor: A => Any, relative: Int = 0) extends FeatureTemplate[A]
@@ -31,10 +39,8 @@ object FeatureTemplate {
     */
   def templatesAsStrings[A](templates: Seq[FeatureTemplate[A]]): Array[String] = {
     templates.zipWithIndex.map {
-      case (Unigram(_, relative), index) =>
-        s"U$index:%x[$relative,$index]"
-      case (Bigram(_, relative), index) =>
-        s"B$index:%x[$relative,$index]"
+      case (template, index) =>
+        s"${template.tag}$index:%x[${template.relative},$index]"
     }.toArray
   }
 
