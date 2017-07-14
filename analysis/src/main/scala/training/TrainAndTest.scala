@@ -2,11 +2,12 @@ package training
 
 import java.io.{File, FileNotFoundException, PrintStream}
 
-import com.intel.imllib.crf.nlp.{CRF, Token}
+import com.intel.imllib.crf.nlp.{CRF, Sequence, Token}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import cats.Semigroup.combine
 import cats.instances.all._
+import features.{SectionHeader, SubsectionHeader, SubsubsectionHeader, Title}
 
 /**
   * Train a model, keeping some tagged data separate to use as test data; report statistics based
@@ -37,7 +38,9 @@ object TrainAndTest extends TrainBase {
     val conf = (new SparkConf).setAppName("TrainAndTest")
     val sc = new SparkContext(conf)
 
-    val trainingData = loadTrainingDate(sc, trainingPath)
+    val allowedLabels = Seq(Title, SectionHeader, SubsectionHeader, SubsubsectionHeader)
+
+    val trainingData = loadTrainingData(sc, trainingPath, allowedLabels)
     val labels = trainingData.flatMap(_.sequence.map(_.label)).distinct.collect.sorted
 
     // Divide the labelled data into two parts, using one to train a model and the rest to test

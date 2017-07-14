@@ -1,0 +1,66 @@
+--0
+bodyText: P=0.99 R=1.00 F1=0.99
+sectionHeader: P=0.98 R=0.95 F1=0.96
+subsectionHeader: P=0.96 R=0.79 F1=0.86
+subsubsectionHeader: P=0.92 R=0.92 F1=0.92
+title: P=1.00 R=0.73 F1=0.84
+--1
+bodyText: P=0.99 R=1.00 F1=0.99
+sectionHeader: P=0.95 R=0.90 F1=0.92
+subsectionHeader: P=0.83 R=0.78 F1=0.80
+subsubsectionHeader: P=0.86 R=0.75 F1=0.80
+title: P=1.00 R=0.44 F1=0.62
+--2
+bodyText: P=0.99 R=1.00 F1=0.99
+sectionHeader: P=1.00 R=0.70 F1=0.82
+subsectionHeader: P=1.00 R=1.00 F1=1.00
+subsubsectionHeader: P=1.00 R=1.00 F1=1.00
+title: P=1.00 R=1.00 F1=1.00
+--3
+bodyText: P=0.99 R=1.00 F1=0.99
+sectionHeader: P=1.00 R=0.81 F1=0.90
+subsectionHeader: P=1.00 R=0.88 F1=0.94
+subsubsectionHeader: P=1.00 R=1.00 F1=1.00
+title: P=0.75 R=0.50 F1=0.60
+--4
+bodyText: P=0.99 R=1.00 F1=1.00
+sectionHeader: P=1.00 R=0.83 F1=0.91
+subsectionHeader: P=0.94 R=0.89 F1=0.92
+subsubsectionHeader: P=1.00 R=1.00 F1=1.00
+title: P=1.00 R=0.75 F1=0.86
+--5
+bodyText: P=0.99 R=1.00 F1=0.99
+sectionHeader: P=0.93 R=0.98 F1=0.95
+subsectionHeader: P=1.00 R=0.88 F1=0.94
+subsubsectionHeader: P=1.00 R=1.00 F1=1.00
+title: P=1.00 R=0.38 F1=0.56
+--6
+bodyText: P=1.00 R=1.00 F1=1.00
+sectionHeader: P=0.99 R=0.96 F1=0.97
+subsectionHeader: P=0.87 R=1.00 F1=0.93
+subsubsectionHeader: P=1.00 R=0.60 F1=0.75
+title: P=0.86 R=0.86 F1=0.86
+--7
+bodyText: P=0.97 R=1.00 F1=0.98
+sectionHeader: P=0.94 R=0.79 F1=0.86
+subsectionHeader: P=0.75 R=0.82 F1=0.79
+subsubsectionHeader: P=0.75 R=0.09 F1=0.17
+title: P=1.00 R=0.33 F1=0.50
+--8
+bodyText: P=0.99 R=1.00 F1=0.99
+sectionHeader: P=0.95 R=0.84 F1=0.89
+subsectionHeader: P=0.91 R=0.95 F1=0.93
+subsubsectionHeader: P=1.00 R=1.00 F1=1.00
+title: P=1.00 R=0.20 F1=0.33
+--9
+bodyText: P=0.99 R=1.00 F1=0.99
+sectionHeader: P=0.92 R=0.92 F1=0.92
+subsectionHeader: P=0.87 R=0.59 F1=0.70
+subsubsectionHeader: P=1.00 R=1.00 F1=1.00
+title: P=1.00 R=0.71 F1=0.83
+--TOTAL
+bodyText: P=0.99 R=1.00 F1=0.99
+sectionHeader: P=0.96 R=0.89 F1=0.92
+subsectionHeader: P=0.89 R=0.83 F1=0.86
+subsubsectionHeader: P=0.93 R=0.54 F1=0.69
+title: P=0.95 R=0.54 F1=0.69

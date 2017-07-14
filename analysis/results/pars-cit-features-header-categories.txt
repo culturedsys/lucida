@@ -1,0 +1,12 @@
+--0
+bodyText: P=0.98 R=1.00 F1=0.99
+sectionHeader: P=0.89 R=0.91 F1=0.90
+subsectionHeader: P=0.94 R=0.86 F1=0.90
+subsubsectionHeader: P=1.00 R=0.10 F1=0.17
+title: P=0.83 R=0.33 F1=0.48
+--TOTAL
+bodyText: P=0.98 R=1.00 F1=0.99
+sectionHeader: P=0.89 R=0.91 F1=0.90
+subsectionHeader: P=0.94 R=0.86 F1=0.90
+subsubsectionHeader: P=1.00 R=0.10 F1=0.17
+title: P=0.83 R=0.33 F1=0.48
