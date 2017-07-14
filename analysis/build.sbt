@@ -17,7 +17,12 @@ libraryDependencies ++= Seq(
 )
 
 // Spark libraries
-libraryDependencies += "org.apache.spark" %% "spark-core" % "2.1.1" % "provided"
+libraryDependencies ++= Seq(
+  "org.apache.spark" %% "spark-core" % "2.1.1" % "provided",
+  //"org.apache.spark" %% "spark-streaming" % "2.1.1" % provided,
+  "org.scalanlp" %% "breeze" % "0.12" % "provided"
+)
+
 
 lazy val imllib = (project in file("imllib-spark"))
 lazy val root = (project in file(".")).dependsOn(imllib)
