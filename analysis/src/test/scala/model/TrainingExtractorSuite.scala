@@ -11,7 +11,7 @@ class TrainingExtractorSuite extends FunSuite {
   val paras = TrainingExtractor.extract(getClass.getResourceAsStream("train.txt")).get
 
   test("First paragraph should be title") {
-    assert(paras(0).tag.get === Title)
+    assert(paras(0).tag === Title)
   }
 
   test("First paragraph should not be numbered") {
@@ -79,7 +79,7 @@ class TrainingExtractorSuite extends FunSuite {
   }
 
   test("Paragraph 7 should be a section header") {
-    assert(paras(7).tag.get === SectionHeader)
+    assert(paras(7).tag === SectionHeader)
   }
 
   test("Paragraph 7 should have length 1") {
@@ -91,7 +91,7 @@ class TrainingExtractorSuite extends FunSuite {
   }
 
   test("Paragraph 9 should be a section header") {
-    assert(paras(9).tag.get == SectionHeader)
+    assert(paras(9).tag == SectionHeader)
   }
 
   test("Paragraph 12 should be the common font size") {

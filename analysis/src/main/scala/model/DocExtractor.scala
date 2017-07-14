@@ -138,8 +138,7 @@ object DocExtractor extends Extractor {
           isBold,
           isItalic,
           isBullet,
-          isSameAsPrevious,
-          None
+          isSameAsPrevious
         )
 
         (processed :+ features, index + 1, Some(para))

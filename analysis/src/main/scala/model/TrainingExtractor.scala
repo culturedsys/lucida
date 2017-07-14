@@ -31,11 +31,11 @@ object TrainingExtractor extends Extractor {
 
   val RELATIVE_SIZE_RE = "xmlFontSize_largest-([0-9])".r
 
-  override def extract(inputStream: InputStream): Try[Seq[Paragraph]] = Try {
+  override def extract(inputStream: InputStream): Try[Seq[TaggedParagraph]] = Try {
     extract(Source.fromInputStream(inputStream).getLines().toSeq)
   }
 
-  def extract(lines: Seq[String]): Seq[Paragraph] = {
+  def extract(lines: Seq[String]): Seq[TaggedParagraph] = {
     Util.groupedWhile(lines.map(_.split(" ")))(Equiv.fromFunction { (first, second) =>
       // Consider two lines as in the same paragraph if they have the same tag and the second
       // line is not explicitly marked as the start of a new paragraph
@@ -85,7 +85,7 @@ object TrainingExtractor extends Extractor {
       // for the first line.
       val isSameAsPrevious = lines.head(SAME) == "bi_xmlSFBIA_continue"
 
-      Paragraph(
+      new TaggedParagraph(
         lines.head(DESCRIPTION),
         words,
         location,
@@ -97,7 +97,7 @@ object TrainingExtractor extends Extractor {
         isItalic,
         isBullet,
         isSameAsPrevious,
-        Tag.fromString.lift(lines.head(TAG))
+        Tag.fromString(lines.head(TAG))
       )
     }
   }

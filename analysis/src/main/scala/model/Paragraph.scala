@@ -43,10 +43,7 @@ case class Paragraph(
   // Does this paragraph have the same font size, family, bold, italic, and alignment as
   // the previous?
 
-  isSameAsPrevious: Boolean,
-
-  // The tag assigned to the paragraph, if any
-  tag: Option[Tag]
+  isSameAsPrevious: Boolean
 )
 
 object Paragraph {
@@ -210,3 +207,58 @@ case object HasDigits extends Digits
 case object NoDigits extends Digits
 case object OtherDigits extends Digits
 
+class TaggedParagraph(
+   description: String,
+   words: Seq[Word],
+   location: Int,
+   numberHint: NumberHint,
+   netHint: NetHint,
+   length: Int,
+   fontSize: FontSize,
+   isBold: Boolean,
+   isItalic: Boolean,
+   isBullet: Boolean,
+   isSameAsPrevious: Boolean,
+
+   // The tag assigned to the paragraph, if any
+   val tag: Tag
+                     ) extends Paragraph(description, words, location, numberHint, netHint, length, fontSize, isBold,
+  isItalic, isBullet, isSameAsPrevious)
+
+object TaggedParagraph extends {
+  def apply(
+      description: String,
+      words: Seq[Word],
+      location: Int,
+      numberHint: NumberHint,
+      netHint: NetHint,
+      length: Int,
+      fontSize: FontSize,
+      isBold: Boolean,
+      isItalic: Boolean,
+      isBullet: Boolean,
+      isSameAsPrevious: Boolean,
+      tag: Tag): TaggedParagraph =
+    new TaggedParagraph(
+      description,
+      words,
+      location,
+      numberHint,
+      netHint,
+      length,
+      fontSize,
+      isBold,
+      isItalic,
+      isBullet,
+      isSameAsPrevious,
+      tag
+    )
+
+  def addTag(para: Paragraph, tag: Tag): TaggedParagraph = {
+    val Paragraph(description, words, location, numberHint, netHint, length, fontSize, isBold,
+          isItalic,isBullet, isSameAsPrevious) = para
+    TaggedParagraph(description, words, location, numberHint, netHint, length, fontSize, isBold,
+      isItalic, isBullet, isSameAsPrevious, tag)
+  }
+
+}

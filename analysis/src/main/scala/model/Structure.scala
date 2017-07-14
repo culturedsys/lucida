@@ -21,12 +21,12 @@ object Structure {
     *
     * @return a sequence of top-level `Structure`s
     */
-  def fromParagraphs(paragraphs: Seq[Paragraph]): Seq[Structure] = {
-    def buildSubTree(acc: Seq[Structure], level: Int, paragraphs: Seq[Paragraph]):
-    (Seq[Structure], Seq[Paragraph]) = paragraphs match {
+  def fromParagraphs(paragraphs: Seq[TaggedParagraph]): Seq[Structure] = {
+    def buildSubTree(acc: Seq[Structure], level: Int, paragraphs: Seq[TaggedParagraph]):
+    (Seq[Structure], Seq[TaggedParagraph]) = paragraphs match {
       case Seq() => (acc, Seq())
       case para +: t =>
-        val subLevel = tagLevel(para.tag.get)
+        val subLevel = tagLevel(para.tag)
         if (subLevel > level) {
           val (thisNode, rest) =
             if (subLevel == BODY) {

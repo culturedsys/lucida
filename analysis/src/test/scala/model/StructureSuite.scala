@@ -1,13 +1,14 @@
 package model
 
-import org.scalatest.FunSuite
+import model.TaggedParagraph.addTag
+import org.scalatest.{Args, FunSuite, Status}
 
 /**
   * Tests for the Structure representation and extraction module.
   */
 class StructureSuite extends FunSuite {
 
-  val paragraph = Paragraph(
+  val paragraph = new Paragraph(
     "Some text",
     Seq(),
     0,
@@ -18,16 +19,14 @@ class StructureSuite extends FunSuite {
     false,
     false,
     false,
-    false,
-    None)
-
+    false)
 
   test("A document with no headings has a flat structure") {
     val document = Seq(
-      paragraph.copy(tag=Some(BodyText)),
-      paragraph.copy(tag=Some(BodyText)),
-      paragraph.copy(tag=Some(BodyText)),
-      paragraph.copy(tag=Some(BodyText))
+      addTag(paragraph, BodyText),
+      addTag(paragraph, BodyText),
+      addTag(paragraph, BodyText),
+      addTag(paragraph, BodyText)
     )
     val structure = Structure.fromParagraphs(document)
     assert(structure.size === document.size)
@@ -37,10 +36,10 @@ class StructureSuite extends FunSuite {
   test("A document with a title and some text has all paragraphs nested under the title") {
     val title = "A title"
     val document = Seq(
-      paragraph.copy(description = title, tag = Some(Title)),
-      paragraph.copy(tag=Some(BodyText)),
-      paragraph.copy(tag=Some(BodyText)),
-      paragraph.copy(tag=Some(BodyText))
+      addTag(paragraph.copy(description = title), Title),
+      addTag(paragraph, BodyText),
+      addTag(paragraph, BodyText),
+      addTag(paragraph, BodyText)
     )
 
     val structure = Structure.fromParagraphs(document)
@@ -55,10 +54,10 @@ class StructureSuite extends FunSuite {
     val section = "A Section"
     val subsection = "A Subsection"
     val document = Seq(
-      paragraph.copy(description = section, tag = Some(SectionHeader)),
-      paragraph.copy(tag=Some(BodyText)),
-      paragraph.copy(description = subsection, tag=Some(SubsectionHeader)),
-      paragraph.copy(tag=Some(BodyText))
+      addTag(paragraph.copy(description = section), SectionHeader),
+      addTag(paragraph, BodyText),
+      addTag(paragraph.copy(description = subsection), SubsectionHeader),
+      addTag(paragraph, BodyText)
     )
 
     val structure = Structure.fromParagraphs(document)
@@ -77,10 +76,10 @@ class StructureSuite extends FunSuite {
     val inSection2 = "In Section 2"
 
     val document = Seq(
-      paragraph.copy(description = section1, tag = Some(SectionHeader)),
-      paragraph.copy(description = inSection1, tag = Some(BodyText)),
-      paragraph.copy(description = section2, tag = Some(SectionHeader)),
-      paragraph.copy(description = inSection2, tag = Some(BodyText))
+      addTag(paragraph.copy(description = section1), SectionHeader),
+      addTag(paragraph.copy(description = inSection1), BodyText),
+      addTag(paragraph.copy(description = section2), SectionHeader),
+      addTag(paragraph.copy(description = inSection2), BodyText)
     )
 
     val structure = Structure.fromParagraphs(document)
@@ -100,9 +99,9 @@ class StructureSuite extends FunSuite {
     val section2 = "Section 2"
 
     val document = Seq(
-      paragraph.copy(description = section1, tag = Some(SectionHeader)),
-      paragraph.copy(description = subsection, tag = Some(SubsectionHeader)),
-      paragraph.copy(description = section2, tag = Some(SectionHeader))
+      addTag(paragraph.copy(description = section1), SectionHeader),
+      addTag(paragraph.copy(description = subsection), SubsectionHeader),
+      addTag(paragraph.copy(description = section2), SectionHeader)
     )
 
     val structure = Structure.fromParagraphs(document)

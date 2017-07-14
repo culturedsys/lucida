@@ -29,8 +29,8 @@ trait TrainBase {
     trainingFiles.map { case (_, lines) =>
       val paragraphs = TrainingExtractor.extract(lines.split("\n"))
       val tags = paragraphs.map { p =>
-        if (labels.isEmpty || labels.contains(p.tag.get))
-          p.tag.get.toString
+        if (labels.isEmpty || labels.contains(p.tag))
+          p.tag.toString
         else
           BodyText.toString
       }
