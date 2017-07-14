@@ -1,6 +1,6 @@
 package training
 
-import features.Paragraph
+import model.Paragraph
 
 /**
   * Describes the features used by the trainer, through a sequence of FeatureTemplate objects.

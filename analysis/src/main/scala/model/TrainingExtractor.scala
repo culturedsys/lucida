@@ -1,4 +1,4 @@
-package features
+package model
 import java.io.InputStream
 
 import scala.io.Source
@@ -7,7 +7,7 @@ import scala.util.Try
 /**
   * Extract the document features we are interested in from the SectLabel labelled training data.
   */
-object TrainingExtractor extends FeatureExtractor {
+object TrainingExtractor extends Extractor {
   // Indexes of the fields we're interested in in the SectLabel training data
   val DESCRIPTION = 0
   val NUMBER_HINT = 2

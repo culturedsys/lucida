@@ -1,4 +1,4 @@
-package features
+package model
 
 /**
   * Miscellaneous utility methods used by the feature extractors

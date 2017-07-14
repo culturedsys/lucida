@@ -1,4 +1,4 @@
-package features
+package model
 
 /**
   * The different tags assigned to paragraphs by the model.

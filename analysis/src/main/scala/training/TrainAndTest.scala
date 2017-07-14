@@ -7,7 +7,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import cats.Semigroup.combine
 import cats.instances.all._
-import features.{SectionHeader, SubsectionHeader, SubsubsectionHeader, Title}
+import model.{SectionHeader, SubsectionHeader, SubsubsectionHeader, Title}
 
 /**
   * Train a model, keeping some tagged data separate to use as test data; report statistics based

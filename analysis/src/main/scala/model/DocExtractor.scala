@@ -1,4 +1,4 @@
-package features
+package model
 
 import java.io.InputStream
 
@@ -11,7 +11,7 @@ import scala.util.matching.Regex
 /**
   * An object for extracting features from Word Doc files
   */
-object DocExtractor extends FeatureExtractor {
+object DocExtractor extends Extractor {
 
   /**
     * Sequences of dotted numbers are used as a possible sign of sub and sub-subheads.

@@ -1,4 +1,4 @@
-package features
+package model
 
 /**
   * A class representing the salient properties of a paragraph
