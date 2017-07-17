@@ -1,6 +1,7 @@
 package training
 
 import com.intel.imllib.crf.nlp.{CRF, CRFModel}
+import model.{SectionHeader, SubsectionHeader, SubsubsectionHeader, Title}
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
@@ -25,7 +26,13 @@ object Train extends TrainBase {
     val conf = (new SparkConf).setAppName("Train")
     val sc = new SparkContext(conf)
 
-    val trainingData = loadTrainingData(sc, trainingPath, Seq())
+    val labels = Seq(
+      Title,
+      SectionHeader,
+      SubsectionHeader,
+      SubsubsectionHeader
+    )
+    val trainingData = loadTrainingData(sc, trainingPath, labels)
 
     val templates = FeatureTemplate.templatesAsStrings(Features.templates, unqualifiedBigram=true)
 
