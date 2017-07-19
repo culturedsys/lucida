@@ -23,7 +23,7 @@ trait TrainBase {
     * @return an `RDD` pointing to `Sequence` objects representing each file in the training data
     *         directory.
     */
-  def loadTrainingData(sc: SparkContext, path: String, labels: Seq[Tag]): RDD[Sequence] = {
+  def loadTrainingData(sc: SparkContext, path: String, labels: Seq[Tag] = Seq()): RDD[Sequence] = {
     val trainingFiles = sc.wholeTextFiles(path)
 
     trainingFiles.map { case (_, lines) =>

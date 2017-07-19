@@ -26,18 +26,15 @@ object Train extends TrainBase {
     val conf = (new SparkConf).setAppName("Train")
     val sc = new SparkContext(conf)
 
-    val labels = Seq(
-      Title,
-      SectionHeader,
-      SubsectionHeader,
-      SubsubsectionHeader
-    )
-    val trainingData = loadTrainingData(sc, trainingPath, labels)
+    val trainingData = loadTrainingData(sc, trainingPath)
 
     val templates = FeatureTemplate.templatesAsStrings(Features.templates, unqualifiedBigram=true)
 
+    val start = System.currentTimeMillis()
     val model = CRF.train(templates, trainingData)
+    val end = System.currentTimeMillis()
 
     CRFModel.saveBinaryFile(model, outputPath)
+    println(s"Time for training: ${end - start} ms")
   }
 }
