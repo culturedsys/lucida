@@ -8,6 +8,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import cats.Semigroup.combine
 import cats.instances.all._
 import model.{SectionHeader, SubsectionHeader, SubsubsectionHeader, Title}
+import RDDFunctions._
 
 /**
   * Train a model, keeping some tagged data separate to use as test data; report statistics based
@@ -38,16 +39,16 @@ object TrainAndTest extends TrainBase {
     val conf = (new SparkConf).setAppName("TrainAndTest")
     val sc = new SparkContext(conf)
 
-    val allowedLabels = Seq(Title, SectionHeader, SubsectionHeader, SubsubsectionHeader)
-
-    val trainingData = loadTrainingData(sc, trainingPath, allowedLabels)
+    val trainingData = loadTrainingData(sc, trainingPath)
     val labels = trainingData.flatMap(_.sequence.map(_.label)).distinct.collect.sorted
 
     // Divide the labelled data into two parts, using one to train a model and the rest to test
     // that model. Return counts for the number of true, predicted, and correctly predicted
     // tokens in each classification.
-    def trainAndTest: (Map[String, Int], Map[String, Int], Map[String, Int]) = {
-      val Array(train, test) = trainingData.randomSplit(Array(9, 1))
+    // k is the number of parts to divide into, index is the (0-based) index of which part to use
+    // as test data
+    def trainAndTest(k: Int, index: Int): (Map[String, Int], Map[String, Int], Map[String, Int]) = {
+      val (test, train) = trainingData.extract(k, index)
       val templates = FeatureTemplate.templatesAsStrings(Features.templates, unqualifiedBigram=true)
       val model = CRF.train(templates, train)
       val prediction = model.predict(test)
@@ -91,7 +92,7 @@ object TrainAndTest extends TrainBase {
         (0 until repeats)
           .foldLeft((defaultMap, defaultMap, defaultMap)) {
             (runningTotals, iteration) =>
-              val results = trainAndTest
+              val results = trainAndTest(repeats, iteration)
               rs.println(s"--$iteration")
               output(results, labels, rs)
               combine(runningTotals, results)
