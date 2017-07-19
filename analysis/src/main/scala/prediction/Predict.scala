@@ -7,8 +7,6 @@ import com.intel.imllib.crf.nlp.{CRFModel, Sequence, Token}
 import model.{DocExtractor, Structure, Tag, TaggedParagraph}
 import training.{FeatureTemplate, Features}
 
-import scala.collection.mutable
-
 /**
   * A Spark Streaming application to predict the structure of supplied documents.
   */
@@ -34,11 +32,14 @@ object Predict {
       val paras = DocExtractor.extract(new ByteArrayInputStream(docData)).get
       val seq = Sequence(FeatureTemplate.tokensAsStrings(Features.templates, paras)
                 .map(Token.put).toArray)
+      val start = System.currentTimeMillis()
       val Array(tags) = model.predict(Array(seq))
+      val end = System.currentTimeMillis()
       val taggedParas = paras.zip(tags.sequence).map {
         case (para, token) => TaggedParagraph.addTag(para, Tag.fromString(token.label))
       }
       output(Structure.fromParagraphs(taggedParas), 0)
+      println(s"Time taken in prediction: ${end - start} ms")
     } catch {
       case e: IOException =>
         println(s"Could not read data: ${e.getMessage}")
