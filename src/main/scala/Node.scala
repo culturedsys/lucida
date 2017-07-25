@@ -36,9 +36,18 @@ case class Node[A](label: A, children: Seq[Node[A]]) {
     * each node in this tree.  That is, `leftMostDescendants(i)` gives the postorder index of the
     * left-most leaf descendant of the node with postorder index `i`.
     */
-  def leftMostDescendants: Vector[Int] = leftMostDescendants(postOrderPaths)
+  def leftMostDescendants: Vector[Int] = Node.leftMostDescendants(postOrderPaths)
 
-  def leftMostDescendants(paths: Vector[Seq[Node[A]]]): Vector[Int] = {
+  /**
+    * Return the postorder indexes of the keyroots of the tree, in increasing order. Keyroots are
+    * those nodes where there is not node with a later postorder index which has the same
+    * left-most descendant; this is equivalent to the nodes which have left siblings.
+    */
+  def keyroots: Seq[Int] = Node.keyroots(leftMostDescendants)
+}
+
+object Node {
+  def leftMostDescendants[A](paths: Vector[Seq[Node[A]]]): Vector[Int] = {
     def helper(acc: Vector[Int], leafForNode: Map[Node[A], Int],
                paths: Vector[(Seq[Node[A]], Int)]): Vector[Int] =
       paths match {
@@ -54,13 +63,6 @@ case class Node[A](label: A, children: Seq[Node[A]]) {
       }
     helper(Vector(), Map(), paths.zipWithIndex)
   }
-
-  /**
-    * Return the postorder indexes of the keyroots of the tree, in increasing order. Keyroots are
-    * those nodes where there is not node with a later postorder index which has the same
-    * left-most descendant; this is equivalent to the nodes which have left siblings.
-    */
-  def keyroots: Seq[Int] = keyroots(leftMostDescendants)
 
   def keyroots(lmds: Seq[Int]): Seq[Int] = {
     val roots = lmds.zipWithIndex.foldLeft(Map[Int, Int]()) { (roots, lmdAndIndex) =>
