@@ -89,6 +89,19 @@ object Node {
   }
 
   /**
+    * Convert a tree into a sequence of nodes in postorder, and a sequence of corresponding
+    * left-most descendents.
+    */
+  def preProcess[A](tree: Node[A]):
+      (Seq[Node[A]], Seq[Int]) = {
+    val paths = tree.postOrderPaths
+    val nodes = paths.map(_.head)
+    val lmds = leftMostDescendants(paths)
+
+    (nodes, lmds)
+  }
+
+  /**
     * Calculate the matrix of tree edit distances between subtrees of `tree1` and `tree2`. This is
     * a two-dimensional array where the array indexes are the post-order positions of root nodes
     * in each tree, e.g. `treeDistanceMatrix(t1, t2)(n)(m)` gives the edit distance between the
@@ -98,15 +111,16 @@ object Node {
     */
   def treeDistanceMatrix[A](tree1: Node[A], tree2: Node[A])(implicit costs: Costs[A]):
       Array[Array[Int]] = {
-    val paths1 = tree1.postOrderPaths
-    val paths2 = tree2.postOrderPaths
 
-    val nodes1 = paths1.map(_.head)
-    val nodes2 = paths2.map(_.head)
+    val (nodes1, lmds1) = preProcess(tree1)
+    val (nodes2, lmds2) = preProcess(tree2)
 
-    val lmds1 = leftMostDescendants(paths1)
-    val lmds2 = leftMostDescendants(paths2)
+    treeDistanceMatrix(nodes1, lmds1, nodes2, lmds2)
+  }
 
+  def treeDistanceMatrix[A](nodes1: Seq[Node[A]], lmds1: Seq[Int],
+                            nodes2: Seq[Node[A]], lmds2: Seq[Int])
+                           (implicit costs: Costs[A]): Array[Array[Int]] = {
     val keyroots1 = keyroots(lmds1)
     val keyroots2 = keyroots(lmds2)
 
@@ -114,41 +128,54 @@ object Node {
 
     for (i <- keyroots1)
       for (j <- keyroots2)
-        calculateTreeDist(i, j)
-
-    // Calculate the tree edit distances for the trees starting at node `i` in `tree1` and node
-    // `j` in `tree2`. The results are stored in the `treeDist` array.
-    def calculateTreeDist(i: Int, j: Int): Unit = {
-      val left1 = lmds1(i)
-      val left2 = lmds2(j)
-      val forestDists = ForestDistanceMatrix(left1 to i, left2 to j)
-
-      forestDists(left1 - 1, left2 - 1) = 0
-
-      for (i1 <- left1 to i)
-        forestDists(i1, left2 - 1) = forestDists(i1 - 1, left2 -1) + costs.delete(nodes1(i1))
-      for (j1 <- left2 to j)
-        forestDists(left1 - 1, j1) =  forestDists(left1 - 1, j1 - 1) + costs.insert(nodes2(j1))
-
-      for (i1 <- left1 to i)
-        for (j1 <- left2 to j) {
-          val deleteCost = forestDists(i1 - 1, j1) + costs.delete(nodes1(i1))
-          val insertCost = forestDists(i1, j1 - 1) + costs.insert(nodes2(j1))
-
-          if (lmds1(i1) == lmds1(i) && lmds2(j1) == lmds2(j)) {
-            val changeCost = forestDists(i1 - 1, j1 - 1) + costs.change(nodes1(i1), nodes2(j1))
-            val minCost = math.min(deleteCost, math.min(insertCost, changeCost))
-            forestDists(i1, j1) = minCost
-            treeDists(i1)(j1) = minCost
-          } else {
-            val changeCost = forestDists(lmds1(i1) - 1, lmds2(j1) - 1) + treeDists(i1)(j1)
-            val minCost = math.min(deleteCost, math.min(insertCost, changeCost))
-            forestDists(i1, j1) = minCost
-          }
-        }
-    }
+        forestDistanceMatrix(i, j, nodes1, lmds1, nodes2, lmds2, treeDists)
 
     treeDists
+  }
+
+  /**
+    * Calculate the edit distances between the forests in two subtrees trees, stretching from the
+    * left-most descendant `i` to `i`, in one tree, and the left-most descendant of `j` to `j` in
+    * the other tree.
+    *
+    * @param nodes1 all nodes in the first tree, in post order.
+    * @param lmds1 the left-most descendant corresponding to each node in the `nodes1` sequence.
+    * @param nodes2 all nodes in the second tree, in post order.
+    * @param lmds2 the left-most descendant corresponding to each node in the `nodes2` sequence.
+    */
+  def forestDistanceMatrix[A](i: Int, j: Int, nodes1: Seq[Node[A]], lmds1: Seq[Int],
+                         nodes2: Seq[Node[A]], lmds2: Seq[Int],
+                         treeDists: Array[Array[Int]])
+                        (implicit costs: Costs[A]): ForestDistanceMatrix = {
+    val left1 = lmds1(i)
+    val left2 = lmds2(j)
+    val forestDists = ForestDistanceMatrix(left1 to i, left2 to j)
+
+    forestDists(left1 - 1, left2 - 1) = 0
+
+    for (i1 <- left1 to i)
+      forestDists(i1, left2 - 1) = forestDists(i1 - 1, left2 -1) + costs.delete(nodes1(i1))
+    for (j1 <- left2 to j)
+      forestDists(left1 - 1, j1) =  forestDists(left1 - 1, j1 - 1) + costs.insert(nodes2(j1))
+
+    for (i1 <- left1 to i)
+      for (j1 <- left2 to j) {
+        val deleteCost = forestDists(i1 - 1, j1) + costs.delete(nodes1(i1))
+        val insertCost = forestDists(i1, j1 - 1) + costs.insert(nodes2(j1))
+
+        if (lmds1(i1) == lmds1(i) && lmds2(j1) == lmds2(j)) {
+          val changeCost = forestDists(i1 - 1, j1 - 1) + costs.change(nodes1(i1), nodes2(j1))
+          val minCost = math.min(deleteCost, math.min(insertCost, changeCost))
+          forestDists(i1, j1) = minCost
+          treeDists(i1)(j1) = minCost
+        } else {
+          val changeCost = forestDists(lmds1(i1) - 1, lmds2(j1) - 1) + treeDists(i1)(j1)
+          val minCost = math.min(deleteCost, math.min(insertCost, changeCost))
+          forestDists(i1, j1) = minCost
+        }
+      }
+
+    forestDists
   }
 }
 
