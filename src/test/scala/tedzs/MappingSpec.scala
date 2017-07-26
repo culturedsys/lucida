@@ -27,13 +27,13 @@ class MappingSpec extends FunSpec {
 
   describe("mapping") {
     it("should produce an empty mapping for two identical nodes") {
-      val tree = Node("a", Seq())
+      val tree = SimpleNode("a", Seq())
       assert(Node.mapping(tree, tree) == Seq())
     }
 
-    val b = Node("b", Seq())
-    val a1 = Node("a", Seq())
-    val a2 = Node("a", Seq(b))
+    val b = SimpleNode("b", Seq())
+    val a1 = SimpleNode("a", Seq())
+    val a2 = SimpleNode("a", Seq(b))
 
     it("should produce an insert mapping for adding one node") {
       assert(Node.mapping(a1, a2) == Seq(Insert(b)))
@@ -48,30 +48,30 @@ class MappingSpec extends FunSpec {
     }
 
     it("should produce a number of inserts for inserting a number of nodes") {
-      val a1 = Node("a", Seq())
-      val d = Node("d", Seq())
-      val c = Node("c", Seq(d))
-      val b = Node("b", Seq(c))
-      val a2 = Node("a", Seq(b))
+      val a1 = SimpleNode("a", Seq())
+      val d = SimpleNode("d", Seq())
+      val c = SimpleNode("c", Seq(d))
+      val b = SimpleNode("b", Seq(c))
+      val a2 = SimpleNode("a", Seq(b))
 
       assert(Node.mapping(a1, a2) == Seq(Insert(d), Insert(c), Insert(b)))
     }
 
     it("should produce a correct mapping for multi-level inserts") {
-      val i = Node("i", Seq())
-      val h = Node("h", Seq())
-      val g = Node("g", Seq())
-      val f = Node("f", Seq())
-      val e = Node("e", Seq())
+      val i = SimpleNode("i", Seq())
+      val h = SimpleNode("h", Seq())
+      val g = SimpleNode("g", Seq())
+      val f = SimpleNode("f", Seq())
+      val e = SimpleNode("e", Seq())
 
-      val d = Node("d", Seq(h, i))
-      val c1 = Node("c", Seq())
-      val c2 = Node("c", Seq(f, g))
-      val b1 = Node("b", Seq())
-      val b2 = Node("b", Seq(e))
+      val d = SimpleNode("d", Seq(h, i))
+      val c1 = SimpleNode("c", Seq())
+      val c2 = SimpleNode("c", Seq(f, g))
+      val b1 = SimpleNode("b", Seq())
+      val b2 = SimpleNode("b", Seq(e))
 
-      val a1 = Node("a", Seq(b1, c1))
-      val a2 = Node("a", Seq(b2, c2, d))
+      val a1 = SimpleNode("a", Seq(b1, c1))
+      val a2 = SimpleNode("a", Seq(b2, c2, d))
 
       assert(Node.mapping(a1, a2).toSet ==
         Set(Insert(i), Insert(h), Insert(d),
@@ -80,13 +80,13 @@ class MappingSpec extends FunSpec {
     }
 
     it("should give correct mappings for combined insertions and deletions") {
-      val e = Node("e", Seq())
-      val d1 = Node("d", Seq())
-      val d2 = Node("d", Seq(e))
-      val c = Node("c", Seq(d1))
-      val b = Node("b", Seq())
-      val a1 = Node("a", Seq(b, c))
-      val a2 = Node("a", Seq(b, d2))
+      val e = SimpleNode("e", Seq())
+      val d1 = SimpleNode("d", Seq())
+      val d2 = SimpleNode("d", Seq(e))
+      val c = SimpleNode("c", Seq(d1))
+      val b = SimpleNode("b", Seq())
+      val a1 = SimpleNode("a", Seq(b, c))
+      val a2 = SimpleNode("a", Seq(b, d2))
 
       assert(Node.mapping(a1, a2).toSet == Set(Delete(c), Insert(e)))
     }

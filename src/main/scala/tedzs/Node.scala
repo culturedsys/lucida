@@ -20,7 +20,11 @@ package tedzs
 /**
   * A node, that is, a label and an ordered sequence (possibly empty) of child nodes.
   */
-case class Node[+A](label: A, children: Seq[Node[A]]) {
+trait Node[+A] {
+
+  def label: A
+  def children: Seq[Node[A]]
+
   /**
     * Return the nodes in the tree rooted at this node, in tree postorder
     */
