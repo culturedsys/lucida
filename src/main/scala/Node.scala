@@ -1,5 +1,5 @@
 /**
-  * A Node, that is, a label and an ordered sequence (possible empty) of child nodes.
+  * A Node, that is, a label and an ordered sequence (possibly empty) of child nodes.
   */
 case class Node[+A](label: A, children: Seq[Node[A]]) {
   /**
@@ -50,6 +50,12 @@ case class Node[+A](label: A, children: Seq[Node[A]]) {
     */
   def distance[B >: A](other: Node[B])
               (implicit costs: Costs[B]): Int = Node.distance(this, other)
+
+  /**
+    * Calculate the mapping from this node to another node.
+    */
+  def mapping[B >: A](other: Node[B])(implicit costs: Costs[B]): Seq[Edit[B]] =
+    Node.mapping(this, other)
 }
 
 object Node {
@@ -177,6 +183,63 @@ object Node {
 
     forestDists
   }
+
+  /**
+    * Calculate a mapping between `tree1` and `tree2`, i.e., a sequence of edit operations that
+    * transforms `tree1` into `tree2`
+    */
+  def mapping[A](tree1: Node[A], tree2: Node[A])(implicit costs: Costs[A]): Seq[Edit[A]] = {
+    val (nodes1, lmds1) = preProcess(tree1)
+    val (nodes2, lmds2) = preProcess(tree2)
+
+    mapping(nodes1, lmds1, nodes2, lmds2)(costs)
+  }
+
+  def mapping[A](nodes1: Seq[Node[A]], lmds1: Seq[Int], nodes2: Seq[Node[A]], lmds2: Seq[Int])
+                (implicit costs: Costs[A]): Seq[Edit[A]] = {
+    val treeDists = treeDistanceMatrix(nodes1, lmds1, nodes2, lmds2)
+
+    var edits = Seq[Edit[A]]()
+    var toCompare= Seq((nodes1.length - 1, nodes2.length - 1))
+
+    while (toCompare.nonEmpty) {
+      val (i, j) = toCompare.head
+      toCompare = toCompare.tail
+
+      val forestDists = forestDistanceMatrix(i, j, nodes1, lmds1, nodes2, lmds2, treeDists)
+
+      var row = i
+      var col = j
+
+      // The row and column in the forestDists matrix representing the empty forest
+      val emptyRow = forestDists.rowBase - 1
+      val emptyCol = forestDists.colBase - 1
+
+      while ( row > emptyRow || col > emptyCol ) {
+        if (row > emptyRow &&
+            forestDists(row - 1, col) + costs.delete(nodes1(row)) == forestDists(row, col)) {
+          edits = Delete(nodes1(row)) +: edits
+          row -= 1
+        } else if (col > emptyCol &&
+            forestDists(row, col - 1) + costs.insert(nodes2(col)) == forestDists(row, col)) {
+          edits = Insert(nodes2(col)) +: edits
+          col -= 1
+        } else if (lmds1(row) == lmds1(i) && lmds2(col) == lmds2(j)) {
+          val n1 = nodes1(row)
+          val n2 = nodes2(col)
+          if (n1.label != n2.label)
+            edits = Change(nodes1(row), nodes2(col)) +: edits
+          row -= 1
+          col -= 1
+        } else {
+          toCompare = (row, col) +: toCompare
+          row = lmds1(row) - 1
+          col = lmds2(col) - 1
+        }
+      }
+    }
+    edits
+  }
 }
 
 /**
@@ -210,6 +273,12 @@ object Costs {
   * A trait encapsulating the different edit operations - inserting, deleting, or changing a node.
   */
 sealed trait Edit[A]
-final case class Insert[A](node: Node[A]) extends Edit[A]
-final case class Delete[A](node: Node[A]) extends Edit[A]
-final case class Change[A](from: Node[A], to: Node[A]) extends Edit[A]
+final case class Insert[A](node: Node[A]) extends Edit[A] {
+  override  def toString = s"Insert(${node.label})"
+}
+final case class Delete[A](node: Node[A]) extends Edit[A] {
+  override def toString: String = s"Delete(${node.label}"
+}
+final case class Change[A](from: Node[A], to: Node[A]) extends Edit[A] {
+  override def toString: String = s"Change(${from.label}, ${to.label})"
+}
