@@ -1,5 +1,7 @@
+package tedzs
+
 /**
-  * A Node, that is, a label and an ordered sequence (possibly empty) of child nodes.
+  * A node, that is, a label and an ordered sequence (possibly empty) of child nodes.
   */
 case class Node[+A](label: A, children: Seq[Node[A]]) {
   /**
@@ -40,7 +42,7 @@ case class Node[+A](label: A, children: Seq[Node[A]]) {
 
   /**
     * Return the postorder indexes of the keyroots of the tree, in increasing order. Keyroots are
-    * those nodes where there is not node with a later postorder index which has the same
+    * those nodes where there is no node with a later postorder index which has the same
     * left-most descendant; this is equivalent to the nodes which have left siblings.
     */
   def keyroots: Seq[Int] = Node.keyroots(leftMostDescendants)
@@ -132,9 +134,10 @@ object Node {
 
     val treeDists = Array.ofDim[Int](nodes1.length, nodes2.length)
 
-    for (i <- keyroots1)
-      for (j <- keyroots2)
-        forestDistanceMatrix(i, j, nodes1, lmds1, nodes2, lmds2, treeDists)
+    for {
+      i <- keyroots1
+      j <- keyroots2
+    } forestDistanceMatrix(i, j, nodes1, lmds1, nodes2, lmds2, treeDists)
 
     treeDists
   }
@@ -164,8 +167,10 @@ object Node {
     for (j1 <- left2 to j)
       forestDists(left1 - 1, j1) =  forestDists(left1 - 1, j1 - 1) + costs.insert(nodes2(j1))
 
-    for (i1 <- left1 to i)
-      for (j1 <- left2 to j) {
+    for {
+      i1 <- left1 to i
+      j1 <- left2 to j
+    } {
         val deleteCost = forestDists(i1 - 1, j1) + costs.delete(nodes1(i1))
         val insertCost = forestDists(i1, j1 - 1) + costs.insert(nodes2(j1))
 
@@ -242,43 +247,4 @@ object Node {
   }
 }
 
-/**
-  * A trait encapsulating a set of insert, delete, and change costs for `Node`s of type `A`
-  */
-trait Costs[-A] {
-  def insert(node: Node[A]): Int
 
-  def delete(node: Node[A]): Int
-
-  def change(from: Node[A], to: Node[A]): Int
-}
-
-object Costs {
-  implicit object IntCosts extends Costs[Int] {
-    def insert(node: Node[Int]): Int = node.label
-
-    def delete(node: Node[Int]): Int = node.label
-
-    def change(from: Node[Int], to: Node[Int]): Int = math.abs(from.label - to.label)
-  }
-
-  object TrivialCosts extends Costs[Any] {
-    def insert(node: Node[Any]): Int = 1
-    def delete(node: Node[Any]): Int = 1
-    def change(from: Node[Any], to: Node[Any]): Int = if (from.label == to.label) 0 else 1
-  }
-}
-
-/**
-  * A trait encapsulating the different edit operations - inserting, deleting, or changing a node.
-  */
-sealed trait Edit[A]
-final case class Insert[A](node: Node[A]) extends Edit[A] {
-  override  def toString = s"Insert(${node.label})"
-}
-final case class Delete[A](node: Node[A]) extends Edit[A] {
-  override def toString: String = s"Delete(${node.label}"
-}
-final case class Change[A](from: Node[A], to: Node[A]) extends Edit[A] {
-  override def toString: String = s"Change(${from.label}, ${to.label})"
-}

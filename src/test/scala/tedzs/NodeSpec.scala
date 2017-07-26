@@ -1,3 +1,5 @@
+package tedzs
+
 import org.scalatest.FunSpec
 
 /**

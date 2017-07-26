@@ -1,10 +1,12 @@
+package tedzs
+
 import org.scalatest.FunSpec
 
 /**
-  * Tests for the ForestDistanceMatrix class
+  * Tests for the tedzs.ForestDistanceMatrix class
   */
 class ForestDistanceMatrixSpec extends FunSpec {
-  describe("ForestDistanceMatrix") {
+  describe("tedzs.ForestDistanceMatrix") {
     describe("0 dimensions") {
       it("can be created") {
         ForestDistanceMatrix(0 until 0, 0 until 0)

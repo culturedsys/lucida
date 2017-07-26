@@ -1,10 +1,12 @@
+package tedzs
+
 import org.scalatest.FunSpec
 
 /**
   * Test the functions for generating mappings between two trees
   */
 class MappingSpec extends FunSpec {
-  implicit val costs =  Costs.TrivialCosts
+  implicit val costs =  TrivialCosts
 
   describe("mapping") {
     it("should produce an empty mapping for two identical nodes") {

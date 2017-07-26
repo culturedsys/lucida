@@ -1,3 +1,5 @@
+package tedzs
+
 /**
   * A class to store matrixes of distances between two forests. This is just a two-dimensional
   * array with unusual indexing. When created, ranges (which must be positive) are specified for

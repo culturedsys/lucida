@@ -1,3 +1,5 @@
+package tedzs
+
 import org.scalatest.FunSpec
 
 /**
@@ -5,7 +7,7 @@ import org.scalatest.FunSpec
   */
 class DistanceSpec extends FunSpec {
 
-  implicit val costs = Costs.TrivialCosts
+  implicit val costs = TrivialCosts
 
   describe("distance") {
     it("should give a distance of 0 with identical one-element trees") {
