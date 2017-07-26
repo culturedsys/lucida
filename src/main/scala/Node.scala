@@ -77,8 +77,27 @@ object Node {
     roots.values.toSeq.sorted
   }
 
+  /**
+    * Return the tree edit distance between the two trees `tree1` and `tree2`. `costs` is an
+    * object giving the cost of inserting, deleting, and changing nodes; an implicit
+    * implementation (depending on the type of the node label) will be used if available.
+    */
   def distance[A](tree1: Node[A], tree2: Node[A])
               (implicit costs: Costs[A]): Int = {
+    val treeDists = treeDistanceMatrix(tree1, tree2)(costs)
+    treeDists.last.last
+  }
+
+  /**
+    * Calculate the matrix of tree edit distances between subtrees of `tree1` and `tree2`. This is
+    * a two-dimensional array where the array indexes are the post-order positions of root nodes
+    * in each tree, e.g. `treeDistanceMatrix(t1, t2)(n)(m)` gives the edit distance between the
+    * tree rooted at node `n` in `t1` and node `m` in `t1`.
+    *
+    * Implements the algorithm of Zhang and Shasha (1989).
+    */
+  def treeDistanceMatrix[A](tree1: Node[A], tree2: Node[A])(implicit costs: Costs[A]):
+      Array[Array[Int]] = {
     val paths1 = tree1.postOrderPaths
     val paths2 = tree2.postOrderPaths
 
@@ -97,49 +116,39 @@ object Node {
       for (j <- keyroots2)
         calculateTreeDist(i, j)
 
+    // Calculate the tree edit distances for the trees starting at node `i` in `tree1` and node
+    // `j` in `tree2`. The results are stored in the `treeDist` array.
     def calculateTreeDist(i: Int, j: Int): Unit = {
       val left1 = lmds1(i)
       val left2 = lmds2(j)
-      val forestDists = Array.ofDim[Int](i  - left1 + 2, j - left2 + 2)
+      val forestDists = ForestDistanceMatrix(left1 to i, left2 to j)
 
-      // The forest distances are indexed by the postorder index of the rightmost node in the
-      // forest, but we only need to be able to store forest distances for a range of indexes
-      // from the leftmost descendant of i to to i (and the leftmose descendant of j to j).
-      // Furthermore, we need to be able to store distances between a forest at a given index and
-      // the empty forest. So we can't directly use node indexes as indexes into the forest
-      // distance array. These convenience functions map between node indexes and indexes in the
-      // array, and use negative indexes to represent the empty forest.
-      def getForestDist(x: Int, y: Int): Int =
-        forestDists(math.max(0, x - left1 + 1))(math.max(0, y - left2 + 1))
-      def setForestDist(x: Int, y: Int, d: Int): Unit =
-        forestDists(math.max(0, x - left1 + 1))(math.max(0, y - left2 + 1)) = d
-
-      forestDists(0)(0) = 0
+      forestDists(left1 - 1, left2 - 1) = 0
 
       for (i1 <- left1 to i)
-        setForestDist(i1, -1, getForestDist(i1 - 1, -1) + costs.delete(nodes1(i1)))
+        forestDists(i1, left2 - 1) = forestDists(i1 - 1, left2 -1) + costs.delete(nodes1(i1))
       for (j1 <- left2 to j)
-        setForestDist(-1, j1, getForestDist(-1, j1 - 1) + costs.insert(nodes2(j1)))
+        forestDists(left1 - 1, j1) =  forestDists(left1 - 1, j1 - 1) + costs.insert(nodes2(j1))
 
       for (i1 <- left1 to i)
         for (j1 <- left2 to j) {
-          val deleteCost = getForestDist(i1 - 1, j1) + costs.delete(nodes1(i1))
-          val insertCost = getForestDist(i1, j1 - 1) + costs.insert(nodes2(j1))
+          val deleteCost = forestDists(i1 - 1, j1) + costs.delete(nodes1(i1))
+          val insertCost = forestDists(i1, j1 - 1) + costs.insert(nodes2(j1))
 
           if (lmds1(i1) == lmds1(i) && lmds2(j1) == lmds2(j)) {
-            val changeCost = getForestDist(i1 - 1, j1 - 1) + costs.change(nodes1(i1), nodes2(j1))
+            val changeCost = forestDists(i1 - 1, j1 - 1) + costs.change(nodes1(i1), nodes2(j1))
             val minCost = math.min(deleteCost, math.min(insertCost, changeCost))
-            setForestDist(i1, j1, minCost)
+            forestDists(i1, j1) = minCost
             treeDists(i1)(j1) = minCost
           } else {
-            val changeCost = getForestDist(lmds1(i1) - 1, lmds2(j1) - 1) + treeDists(i1)(j1)
+            val changeCost = forestDists(lmds1(i1) - 1, lmds2(j1) - 1) + treeDists(i1)(j1)
             val minCost = math.min(deleteCost, math.min(insertCost, changeCost))
-            setForestDist(i1, j1, minCost)
+            forestDists(i1, j1) = minCost
           }
         }
     }
 
-    treeDists(nodes1.length - 1)(nodes2.length - 1)
+    treeDists
   }
 }
 
@@ -169,3 +178,11 @@ object Costs {
     def change(from: Node[Any], to: Node[Any]): Int = if (from.label == to.label) 0 else 1
   }
 }
+
+/**
+  * A trait encapsulating the different edit operations - inserting, deleting, or changing a node.
+  */
+sealed trait Edit[A]
+final case class Insert[A](node: Node[A]) extends Edit[A]
+final case class Delete[A](node: Node[A]) extends Edit[A]
+final case class Change[A](from: Node[A], to: Node[A]) extends Edit[A]
