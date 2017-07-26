@@ -46,5 +46,24 @@ class DistanceSpec extends FunSpec {
 
       assert(a1.distance(a2) == 1)
     }
+
+    it("should produce a correct distance for multi-level inserts") {
+      val i = Node("i", Seq())
+      val h = Node("h", Seq())
+      val g = Node("g", Seq())
+      val f = Node("f", Seq())
+      val e = Node("e", Seq())
+
+      val d = Node("d", Seq(h, i))
+      val c1 = Node("c", Seq())
+      val c2 = Node("c", Seq(f, g))
+      val b1 = Node("b", Seq())
+      val b2 = Node("b", Seq(e))
+
+      val a1 = Node("a", Seq(b1, c1))
+      val a2 = Node("a", Seq(b2, c2, d))
+
+      assert(Node.distance(a1, a2) == 6)
+    }
   }
 }
