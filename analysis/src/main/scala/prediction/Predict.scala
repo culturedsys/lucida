@@ -8,7 +8,8 @@ import model.{DocExtractor, Structure, Tag, TaggedParagraph}
 import training.{FeatureTemplate, Features}
 
 /**
-  * A Spark Streaming application to predict the structure of supplied documents.
+  * An application to predict the structure of supplied documents (and time how long it takes to
+  * do so).
   */
 object Predict {
   def main(args: Array[String]): Unit = {
@@ -23,11 +24,6 @@ object Predict {
     try {
       val model = CRFModel.loadBinaryFile(modelPath)
       val docData = Files.readAllBytes(Paths.get(docPath))
-
-      //val conf = new SparkConf().setAppName("Analysis")
-      //val ssc = new StreamingContext(conf, Milliseconds(1))
-
-      //val tasks = ssc.queueStream(mutable.Queue(ssc.sparkContext.parallelize(Seq(docData))))
 
       val paras = DocExtractor.extract(new ByteArrayInputStream(docData)).get
       val seq = Sequence(FeatureTemplate.tokensAsStrings(Features.templates, paras)
