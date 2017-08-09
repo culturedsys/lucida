@@ -222,7 +222,7 @@ class TaggedParagraph(
 
    // The tag assigned to the paragraph, if any
    val tag: Tag
-                     ) extends Paragraph(description, words, location, numberHint, netHint, length, fontSize, isBold,
+) extends Paragraph(description, words, location, numberHint, netHint, length, fontSize, isBold,
   isItalic, isBullet, isSameAsPrevious)
 
 object TaggedParagraph extends {

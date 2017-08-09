@@ -1,12 +1,20 @@
 package model
+import tedzs.Node
 
 /**
   * Represents the structure of a document, as a tree of Paragraphs
   */
-case class Structure(
-  content: Paragraph,
-  children: Seq[Structure] = Seq()
-)
+case class Structure[+A](
+  content: A,
+  children: Seq[Structure[A]] = Seq()
+) extends Node[A] {
+
+  def label = content
+
+  def map[B](f: A => B): Structure[B] = {
+      Structure(f(content), children.map(_.map(f)))
+    }
+}
 
 object Structure {
   val TITLE = 0
@@ -21,9 +29,10 @@ object Structure {
     *
     * @return a sequence of top-level `Structure`s
     */
-  def fromParagraphs(paragraphs: Seq[TaggedParagraph]): Seq[Structure] = {
-    def buildSubTree(acc: Seq[Structure], level: Int, paragraphs: Seq[TaggedParagraph]):
-    (Seq[Structure], Seq[TaggedParagraph]) = paragraphs match {
+  def fromParagraphs(paragraphs: Seq[TaggedParagraph]): Seq[Structure[TaggedParagraph]] = {
+    def buildSubTree(acc: Seq[Structure[TaggedParagraph]],
+                     level: Int, paragraphs: Seq[TaggedParagraph]):
+        (Seq[Structure[TaggedParagraph]], Seq[TaggedParagraph]) = paragraphs match {
       case Seq() => (acc, Seq())
       case para +: t =>
         val subLevel = tagLevel(para.tag)

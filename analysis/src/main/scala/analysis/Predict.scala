@@ -1,4 +1,4 @@
-package prediction
+package analysis
 
 import java.io.{ByteArrayInputStream, FileInputStream, FileNotFoundException, IOException}
 import java.nio.file.{Files, Paths}
@@ -44,9 +44,9 @@ object Predict {
 
   }
 
-  def output(structure: Seq[Structure], level: Int): Unit = {
+  def output(structure: Seq[Structure[TaggedParagraph]], level: Int): Unit = {
     for (s <- structure) {
-      println(s.content.asInstanceOf[TaggedParagraph].tag.toString.padTo(10, " ").take(10)
+      println(s.content.tag.toString.padTo(10, " ").take(10)
         .mkString + ": " + ("--" * level) + s.content.description)
       output(s.children, level + 1)
     }
