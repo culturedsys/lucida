@@ -20,7 +20,7 @@ package tedzs
 /**
   * A trait encapsulating the different edit operations - inserting, deleting, or changing a node.
   */
-sealed trait Edit[A]
+sealed trait Edit[+A]
 
 final case class Insert[A](node: Node[A]) extends Edit[A] {
   override  def toString = s"Insert(${node.label})"
