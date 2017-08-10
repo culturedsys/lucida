@@ -1,5 +1,6 @@
 package analysis
 
+import model.{Common, NetOther, NumberOther, Paragraph}
 import org.scalatest.FunSuite
 import tedzs.Node
 
@@ -7,7 +8,10 @@ import tedzs.Node
   * Test the cost functions for edits
   */
 class CostsSuite extends FunSuite {
-  case class TestNode(label: String) extends Node[String] {
+  case class TestNode(labelString: String) extends Node[Paragraph] {
+    val label = Paragraph(labelString, Seq(), 0, NumberOther, NetOther, 0, Common, false, false, false,
+      false)
+
     val children = Seq()
   }
 

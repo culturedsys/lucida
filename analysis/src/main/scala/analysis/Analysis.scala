@@ -30,21 +30,23 @@ object Analysis {
     *         that paragraph has changed between the two documents.
     */
   def compare(from: Seq[Paragraph], to: Seq[Paragraph], model: CRFModel):
-      (Structure[(String, Change)], Structure[(String, Change)]) = {
+      (Structure[(Paragraph, Change)], Structure[(Paragraph, Change)]) = {
 
     implicit val costs = StringCosts
 
-    val fromForest = Structure.fromParagraphs(classify(from, model)).map(_.map(_.description))
-    val fromStructure = Structure("From", fromForest)
+    val fromClassified = classify(from, model)
+    val fromStructure = Structure(fromClassified.head,
+                                  Structure.fromParagraphs(fromClassified.tail))
 
-    val toForest = Structure.fromParagraphs(classify(to, model)).map(_.map(_.description))
-    val toStructure = Structure("To", toForest)
+    val toClassified = classify(to, model)
+    val toStructure = Structure(toClassified.head,
+      Structure.fromParagraphs(toClassified.tail))
 
     val operations = Node.mapping(fromStructure, toStructure)
 
-    def fromChange(fromText: String): Edit[String] => Option[Change] = {
-      case Delete(Structure(text, _)) if text == fromText => Some(Deleted)
-      case Change(Structure(text, _), _) if text == fromText => Some(Changed)
+    def fromChange(fromPara: Paragraph): Edit[Paragraph] => Option[Change] = {
+      case Delete(Structure(para, _)) if para == fromPara => Some(Deleted)
+      case Change(Structure(para, _), _) if para == fromPara => Some(Changed)
       case _ => None
     }
 
@@ -53,9 +55,9 @@ object Analysis {
       (text, change)
     }
 
-    def toChange(toText: String): Edit[String] => Option[Change] = {
-      case Insert(Structure(text, _)) if text == toText => Some(Inserted)
-      case Change(_, Structure(text, _)) if text == toText => Some(Changed)
+    def toChange(toPara: Paragraph): Edit[Paragraph] => Option[Change] = {
+      case Insert(Structure(para, _)) if para == toPara => Some(Inserted)
+      case Change(_, Structure(para, _)) if para == toPara => Some(Changed)
       case _ => None
     }
 
@@ -78,35 +80,38 @@ case object Changed extends Change
 case object Unchanged extends Change
 
 /**
-  * Calculate the costs of edits on nodes of strings, which are the string edit distance of the
-  * change between strings.
+  * Calculate the costs of edits on nodes of paragraphs, which are the string edit distance of the
+  * change between strings making up the paragraphs.
   */
-object StringCosts extends Costs[String] {
-  override def insert(node: Node[String]): Int = node.label.length
+object StringCosts extends Costs[Paragraph] {
+  override def insert(node: Node[Paragraph]): Int = node.label.description.length
 
-  override def delete(node: Node[String]): Int = node.label.length
+  override def delete(node: Node[Paragraph]): Int = node.label.description.length
 
-  override def change(from: Node[String], to: Node[String]): Int = {
-    val costs = Array.ofDim[Int](from.label.length + 1, to.label.length + 1)
+  override def change(from: Node[Paragraph], to: Node[Paragraph]): Int = {
+    val fromString = from.label.description
+    val toString = to.label.description
+
+    val costs = Array.ofDim[Int](fromString.length + 1, toString.length + 1)
 
     costs(0)(0) = 0
 
-    for (i <- 1 to from.label.length) {
+    for (i <- 1 to fromString.length) {
       costs(i)(0) = i
     }
 
-    for (j <- 1 to to.label.length) {
+    for (j <- 1 to toString.length) {
       costs(0)(j) = j
     }
 
     for {
-      i <- 1 to from.label.length
-      j <- 1 to to.label.length
+      i <- 1 to fromString.length
+      j <- 1 to toString.length
     } {
       val insertCost = costs(i)(j - 1) + 1
       val deleteCost = costs(i - 1)(j) + 1
       val changeCost = costs(i - 1)(j - 1) +
-        (if (from.label.charAt(i - 1) == to.label.charAt(j - 1)) 0 else 1)
+        (if (fromString.charAt(i - 1) == toString.charAt(j - 1)) 0 else 1)
 
       costs(i)(j) = math.min(math.min(insertCost, deleteCost), changeCost)
     }
