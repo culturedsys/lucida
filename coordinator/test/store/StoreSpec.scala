@@ -5,7 +5,6 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
-import akka.util.Timeout
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatest.words.ShouldVerb
 
@@ -91,7 +90,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
 
       val id = expectMsgType[RequestAdded].id
 
-      store ! GetRequest(id)
+      store ! ClaimRequest(id)
 
       val RequestData(_, actualFrom, actualTo) = expectMsgType[RequestData]
       actualFrom should equal(expectedFrom)
@@ -100,8 +99,21 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
 
     "return NotFound when there is no matching id" in {
       val id = UUID.randomUUID()
-      store ! GetRequest(id)
+      store ! ClaimRequest(id)
       expectMsg(NotFound(id))
+    }
+
+    "remove the request from the request list" in {
+      val (expectedFrom, expectedTo) = (Array(0.toByte), Array(1.toByte))
+      store ! AddRequest(expectedFrom, expectedTo)
+
+      val id = expectMsgType[RequestAdded].id
+
+      store ! ClaimRequest(id)
+      expectMsgType[RequestData]
+
+      store ! ListRequests
+      expectMsgType[RequestList].ids should not contain(id)
     }
   }
 
@@ -120,7 +132,17 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
       val id = expectMsgType[RequestAdded].id
 
       store ! AddResponse(id, Array())
+      expectMsg(ResponseAdded(id))
+    }
 
+    "return ResponseAdded when there is a matching pending request" in {
+      store ! AddRequest(Array(), Array())
+      val id = expectMsgType[RequestAdded].id
+
+      store ! ClaimRequest(id)
+      expectMsgType[RequestData]
+
+      store ! AddResponse(id, Array())
       expectMsg(ResponseAdded(id))
     }
 
@@ -136,6 +158,20 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
 
       val requests = expectMsgType[RequestList].ids
       requests should not contain id
+    }
+
+    "return ResponseRepeated when a response is added twice for the same ID" in {
+      store ! AddRequest(Array(), Array())
+      val id = expectMsgType[RequestAdded].id
+
+      store ! ClaimRequest(id)
+      expectMsgType[RequestData]
+
+      store ! AddResponse(id, Array())
+      expectMsg(ResponseAdded(id))
+
+      store ! AddResponse(id, Array())
+      expectMsg(ResponseRepeated(id))
     }
   }
 
@@ -155,6 +191,18 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
       store ! GetResponse(id)
 
       expectMsg(NotCompleted(id))
+    }
+
+    "return NotCompleted for an ID that matches a pending request" in {
+      store ! AddRequest(Array(), Array())
+      val id = expectMsgType[RequestAdded].id
+
+      store ! ClaimRequest(id)
+      expectMsgType[RequestData]
+
+      store ! GetResponse(id)
+      expectMsg(NotCompleted(id))
+
     }
 
     "return ResponseData for an ID that matches a response" in {
@@ -185,7 +233,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
       store ! Cleanup(Duration.ofNanos(1))
       expectMsg(CleanupCompleted)
 
-      store ! GetRequest(id)
+      store ! ClaimRequest(id)
 
       expectMsg(NotFound(id))
     }
@@ -214,7 +262,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
       store ! Cleanup(Duration.ofDays(1))
       expectMsg(CleanupCompleted)
 
-      store ! GetRequest(id)
+      store ! ClaimRequest(id)
       expectMsgType[RequestData].id should equal(id)
     }
 
@@ -231,6 +279,37 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
       store ! GetResponse(id)
 
       expectMsgType[ResponseData].id should equal(id)
+    }
+
+    "move an un-responded-to pending request back to the request list" in {
+      store ! AddRequest(Array(), Array())
+      val id = expectMsgType[RequestAdded].id
+
+      store ! ClaimRequest(id)
+      expectMsgType[RequestData]
+
+      store ! Cleanup(Duration.ofDays(1), Duration.ofDays(0), Duration.ofDays(1))
+      expectMsg(CleanupCompleted)
+
+      store ! ListRequests
+      expectMsgType[RequestList].ids should contain(id)
+    }
+
+    "not move a responded-to request from the pending list to the request list" in {
+      store ! AddRequest(Array(), Array())
+      val id = expectMsgType[RequestAdded].id
+
+      store ! ClaimRequest(id)
+      expectMsgType[RequestData]
+
+      store ! AddResponse(id, Array())
+      expectMsg(ResponseAdded(id))
+
+      store ! Cleanup(Duration.ofDays(1), Duration.ofDays(0), Duration.ofDays(1))
+      expectMsg(CleanupCompleted)
+
+      store ! ListRequests
+      expectMsgType[RequestList].ids should not contain(id)
     }
   }
 
