@@ -9,6 +9,7 @@ scalaVersion := "2.11.11"
 
 libraryDependencies += guice
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.0" % Test
+libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.5.4" % "test"
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "lucida.controllers._"
