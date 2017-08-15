@@ -1,6 +1,7 @@
 package controllers
 
 import java.io.InputStream
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.util.UUID
 import javax.mail.internet.MimeMultipart
@@ -12,7 +13,7 @@ import akka.testkit.{ImplicitSender, TestKitBase}
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.WsScalaTestClient
 import play.api.libs.Files.SingletonTemporaryFileCreator
-import play.api.libs.json.{JsArray, JsValue}
+import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.mvc.{Headers, MultipartFormData}
 import play.api.mvc.MultipartFormData.FilePart
 import play.api.test.FakeRequest
@@ -156,13 +157,34 @@ class ApiControllerSpec extends WordSpec with Matchers
       val controller = defaultController
       controller.store ! AddRequest(Array(), Array())
       val id = expectMsgType[RequestAdded].id
-      controller.store ! AddResponse(id, "[{},{}]".getBytes("UTF-8"))
+      controller.store ! AddResponse(id, "[{},{}]".getBytes(StandardCharsets.UTF_8))
       expectMsgType[ResponseAdded]
 
       val result = controller.queryResponse(id).apply(FakeRequest())
       status(result) should be(OK)
 
       contentType(result).get should be("text/json")
+    }
+  }
+
+  "addResponse" should {
+    "return 404 for an unknown ID" in {
+      val result = defaultController.addResponse(UUID.randomUUID()).apply(FakeRequest())
+      status(result) should be(NOT_FOUND)
+    }
+
+    "add the response for a known ID" in {
+      val controller = defaultController
+      controller.store ! AddRequest(Array(), Array())
+      val id = expectMsgType[RequestAdded].id
+
+      val result = controller.addResponse(id)
+        .apply(FakeRequest(GET, "/").withBody(Json.arr(Json.obj(), Json.obj())))
+
+      status(result) should be(OK)
+
+      controller.store ! GetResponse(id)
+      expectMsgType[ResponseData]
     }
   }
 }

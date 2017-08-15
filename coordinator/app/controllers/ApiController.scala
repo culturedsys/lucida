@@ -76,4 +76,13 @@ class ApiController @Inject() (cc: ControllerComponents, system: ActorSystem)
         Ok(data).as("text/json")
     }
   }
+
+  def addResponse(id: UUID) = Action.async(parse.byteString) { implicit request =>
+    val data = request.body.toArray
+    (store ? AddResponse(id, data)).map {
+      case Store.NotFound(_) => NotFound(Json.obj("error" -> s"Request $id not found"))
+
+      case ResponseAdded(_) => Ok("")
+    }
+  }
 }
