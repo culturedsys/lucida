@@ -40,7 +40,7 @@ class ApiController @Inject() (cc: ControllerComponents, system: ActorSystem)
   def claimRequest(id: UUID) = Action.async { implicit request =>
     (store ? ClaimRequest(id)).map {
       case Store.NotFound(id) =>
-        NotFound(Json.obj("error" -> "Request $id not found"))
+        NotFound(Json.obj("error" -> s"Request $id not found"))
       case RequestData(_, from, to) =>
         val boundary = formatters.Multipart.randomBoundary()
         val formatter = formatters.Multipart.format(boundary, StandardCharsets.US_ASCII, 65535)
@@ -61,6 +61,19 @@ class ApiController @Inject() (cc: ControllerComponents, system: ActorSystem)
     (store ? AddRequest(from, to)).map {
       case RequestAdded(id) =>
         Ok(Json.toJson(Seq(id)))
+    }
+  }
+
+  def queryResponse(id: UUID) = Action.async { implicit request =>
+    (store ? GetResponse(id)).map {
+      case Store.NotFound(_) =>
+        NotFound(Json.obj("error" -> s"Request $id not found"))
+
+      case NotCompleted(_) =>
+        Accepted("")
+
+      case ResponseData(_, data) =>
+        Ok(data).as("text/json")
     }
   }
 }

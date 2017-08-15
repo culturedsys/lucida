@@ -17,7 +17,7 @@ import play.api.mvc.{Headers, MultipartFormData}
 import play.api.mvc.MultipartFormData.FilePart
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import store.Store.{AddRequest, ClaimRequest, RequestAdded, RequestData}
+import store.Store._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -134,6 +134,35 @@ class ApiControllerSpec extends WordSpec with Matchers
 
       from should equal(fromData)
       to should equal(toData)
+    }
+  }
+
+  "queryResponse" should {
+    "return 404 for an unknown ID" in {
+      val result = defaultController.queryResponse(UUID.randomUUID()).apply(FakeRequest())
+      status(result) should be (NOT_FOUND)
+    }
+
+    "return 202 if the ID is known but not yet completed" in {
+      val controller = defaultController
+      controller.store ! AddRequest(Array(), Array())
+      val id = expectMsgType[RequestAdded].id
+
+      val result = controller.queryResponse(id).apply(FakeRequest())
+      status(result) should be(ACCEPTED)
+    }
+
+    "return JSON if the ID has been completed" in {
+      val controller = defaultController
+      controller.store ! AddRequest(Array(), Array())
+      val id = expectMsgType[RequestAdded].id
+      controller.store ! AddResponse(id, "[{},{}]".getBytes("UTF-8"))
+      expectMsgType[ResponseAdded]
+
+      val result = controller.queryResponse(id).apply(FakeRequest())
+      status(result) should be(OK)
+
+      contentType(result).get should be("text/json")
     }
   }
 }
