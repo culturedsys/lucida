@@ -1,21 +1,23 @@
 package controllers
 
 import java.io.InputStream
+import java.nio.file.Files
 import java.util.UUID
 import javax.mail.internet.MimeMultipart
 import javax.mail.util.ByteArrayDataSource
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.testkit.{ImplicitSender, TestKit, TestKitBase}
+import akka.testkit.{ImplicitSender, TestKitBase}
 import org.scalatest.{Matchers, WordSpec}
-import org.scalatest.words.ShouldVerb
-import org.scalatestplus.play.{PlaySpec, WsScalaTestClient}
-import org.scalatestplus.play.guice.{GuiceOneAppPerSuite, GuiceOneAppPerTest}
+import org.scalatestplus.play.WsScalaTestClient
+import play.api.libs.Files.SingletonTemporaryFileCreator
 import play.api.libs.json.{JsArray, JsValue}
-import play.api.test.{FakeRequest, Injecting}
+import play.api.mvc.{Headers, MultipartFormData}
+import play.api.mvc.MultipartFormData.FilePart
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import store.Store.{AddRequest, RequestAdded}
+import store.Store.{AddRequest, ClaimRequest, RequestAdded, RequestData}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -28,17 +30,20 @@ class ApiControllerSpec extends WordSpec with Matchers
   with WsScalaTestClient  {
 
   implicit lazy val system = ActorSystem("TestSystem")
+  implicit val mat = ActorMaterializer()
+
+  def defaultController =
+    new ApiController(stubControllerComponents(playBodyParsers = stubPlayBodyParsers(mat)), system)
 
   "listRequests" should {
-    val controller = new ApiController(stubControllerComponents(), system)
-
     "respond with an empty array initially" in {
-      val result = controller.listRequests.apply(FakeRequest(GET, "/"))
+      val result = defaultController.listRequests.apply(FakeRequest(GET, "/"))
       val content: JsValue = contentAsJson(result)
       content.asInstanceOf[JsArray].value should be(empty)
     }
 
     "respond with an array containing the id of an added Request" in {
+      val controller = defaultController
       controller.store ! AddRequest(Array(), Array())
       val id = expectMsgType[RequestAdded].id
 
@@ -49,7 +54,7 @@ class ApiControllerSpec extends WordSpec with Matchers
   }
 
   "claimRequest" should {
-    val controller = new ApiController(stubControllerComponents(), system)
+    val controller = defaultController
 
     "respond with Not Found if the id does not match a request" in {
       val result = controller.claimRequest(UUID.randomUUID()).apply(FakeRequest(POST, "/"))
@@ -76,7 +81,6 @@ class ApiControllerSpec extends WordSpec with Matchers
     }
 
     "respond with the request data" in {
-      implicit val mat = ActorMaterializer()
       val bytes = contentAsBytes(result)
       val contentType = Await.result(result, 5 seconds).body.contentType
       val mp = new MimeMultipart(new ByteArrayDataSource(bytes.toArray, contentType.get))
@@ -87,6 +91,49 @@ class ApiControllerSpec extends WordSpec with Matchers
       mp.getBodyPart(1).getContent.asInstanceOf[InputStream].read(toContent)
       fromContent should equal(fromData)
       toContent should equal(toData)
+    }
+  }
+
+  "addRequest" should {
+    "respond with 400 if the post data does not contain two files" in {
+      val controller = defaultController
+
+      val result = controller.addRequest.apply(FakeRequest(POST, "/"))
+
+      status(result) should be(BAD_REQUEST)
+    }
+
+    "add a request to the store" in {
+      val controller = defaultController
+
+      val fromData = "from".getBytes
+      val toData = "to".getBytes
+
+      val fromFile = SingletonTemporaryFileCreator.create()
+      Files.write(fromFile.path, fromData)
+
+      val toFile = SingletonTemporaryFileCreator.create()
+      Files.write(toFile.path, toData)
+
+      val files = Seq(
+        FilePart("from", "from.doc", Some("document/msword"), fromFile),
+        FilePart("to", "to.doc", Some("document/msword"), toFile)
+      )
+
+      val multipartBody = MultipartFormData(Map[String, Seq[String]](), files, Seq())
+
+      val request = FakeRequest(GET, "/", Headers(), multipartBody)
+
+      val result = controller.addRequest.apply(request)
+
+      val content = contentAsJson(result)
+      val id = UUID.fromString(content.as[Seq[String]].head)
+
+      controller.store ! ClaimRequest(id)
+      val RequestData(_, from, to) = expectMsgType[RequestData]
+
+      from should equal(fromData)
+      to should equal(toData)
     }
   }
 }

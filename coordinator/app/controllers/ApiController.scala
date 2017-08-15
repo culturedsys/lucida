@@ -1,9 +1,9 @@
 package controllers
 
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
 import java.util.UUID
 
-import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.stream.scaladsl.Source
@@ -15,7 +15,7 @@ import play.api.mvc.MultipartFormData.{FilePart, Part}
 import play.api.mvc._
 import play.core.formatters
 import store.Store
-import store.Store.{ClaimRequest, ListRequests, RequestData, RequestList}
+import store.Store._
 
 import scala.concurrent.duration._
 
@@ -48,9 +48,7 @@ class ApiController @Inject() (cc: ControllerComponents, system: ActorSystem)
           Source.single(ByteString.fromArray(from)))
         val toPart = FilePart("to", "to.doc",
           Some("application/msword"), Source.single(ByteString.fromArray(to)))
-        val parts =
-          Source[Part[Source[ByteString, NotUsed]]](Seq(fromPart, toPart)
-            .asInstanceOf[scala.collection.immutable.Iterable[Part[Source[ByteString, NotUsed]]]])
+        val parts = Source(List(fromPart, toPart))
         Result (
           header = ResponseHeader(200, Map.empty),
           HttpEntity.Streamed(parts.via(formatter), None, Some(s"multipart/form-data; boundary=$boundary"))
@@ -58,5 +56,11 @@ class ApiController @Inject() (cc: ControllerComponents, system: ActorSystem)
     }
   }
 
-
+  def addRequest = Action.async(parse.multipartFormData) { implicit request =>
+    val Seq(from, to) = request.body.files.map(fp => Files.readAllBytes(fp.ref.path))
+    (store ? AddRequest(from, to)).map {
+      case RequestAdded(id) =>
+        Ok(Json.toJson(Seq(id)))
+    }
+  }
 }
