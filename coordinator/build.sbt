@@ -1,9 +1,8 @@
-name := """Coordinator"""
-//organization := "lucida"
+name := "coordinator-component"
 
-version := "1.0-SNAPSHOT"
+version := "0.1"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val coordinator = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.11"
 
@@ -12,9 +11,3 @@ libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.0
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.5.4" % "test"
 
 libraryDependencies += "com.sun.mail" % "javax.mail" % "1.6.0" % "test"
-
-// Adds additional packages into Twirl
-//TwirlKeys.templateImports += "lucida.controllers._"
-
-// Adds additional packages into conf/routes
-// play.sbt.routes.RoutesKeys.routesImport += "lucida.binders._"
