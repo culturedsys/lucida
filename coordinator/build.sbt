@@ -2,8 +2,6 @@ name := "coordinator-component"
 
 version := "0.1"
 
-lazy val coordinator = (project in file(".")).enablePlugins(PlayScala)
-
 scalaVersion := "2.11.11"
 
 libraryDependencies += guice

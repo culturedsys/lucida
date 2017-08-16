@@ -1,11 +1,8 @@
 package controllers
 
-import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.util.UUID
-import javax.mail.internet.MimeMultipart
-import javax.mail.util.ByteArrayDataSource
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
@@ -18,6 +15,7 @@ import play.api.mvc.{Headers, MultipartFormData}
 import play.api.mvc.MultipartFormData.FilePart
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import protocol.Protocol
 import store.Store._
 
 import scala.concurrent.Await
@@ -84,12 +82,8 @@ class ApiControllerSpec extends WordSpec with Matchers
     "respond with the request data" in {
       val bytes = contentAsBytes(result)
       val contentType = Await.result(result, 5 seconds).body.contentType
-      val mp = new MimeMultipart(new ByteArrayDataSource(bytes.toArray, contentType.get))
+      val Seq(fromContent, toContent) = Protocol.multipartToFiles(bytes.toArray, contentType.get)
 
-      val fromContent = Array.ofDim[Byte](fromData.length)
-      mp.getBodyPart(0).getContent.asInstanceOf[InputStream].read(fromContent)
-      val toContent = Array.ofDim[Byte](toData.length)
-      mp.getBodyPart(1).getContent.asInstanceOf[InputStream].read(toContent)
       fromContent should equal(fromData)
       toContent should equal(toData)
     }

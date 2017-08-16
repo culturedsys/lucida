@@ -1,24 +1,20 @@
 package controllers
 
-import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.pattern.ask
-import akka.stream.scaladsl.Source
-import akka.util.{ByteString, Timeout}
+import akka.util.Timeout
 import com.google.inject.Inject
-import play.api.http.HttpEntity
 import play.api.libs.json.Json
-import play.api.mvc.MultipartFormData.{FilePart, Part}
 import play.api.mvc._
-import play.core.formatters
 import store.Store
 import store.Store._
 
 import scala.concurrent.duration._
 
+import protocol.Protocol
 
 /**
   * Handles all the API requests.
@@ -42,16 +38,16 @@ class ApiController @Inject() (cc: ControllerComponents, system: ActorSystem)
       case Store.NotFound(id) =>
         NotFound(Json.obj("error" -> s"Request $id not found"))
       case RequestData(_, from, to) =>
-        val boundary = formatters.Multipart.randomBoundary()
-        val formatter = formatters.Multipart.format(boundary, StandardCharsets.US_ASCII, 65535)
-        val fromPart = FilePart("from", "from.doc", Some("application/msword"),
-          Source.single(ByteString.fromArray(from)))
-        val toPart = FilePart("to", "to.doc",
-          Some("application/msword"), Source.single(ByteString.fromArray(to)))
-        val parts = Source(List(fromPart, toPart))
+        val contentType = Some("application/msword")
+
+        val entity = Protocol.filesToMultipart(
+          ("from", "from.doc", contentType, from),
+          ("to", "to.doc", contentType, to)
+        )
+
         Result (
           header = ResponseHeader(200, Map.empty),
-          HttpEntity.Streamed(parts.via(formatter), None, Some(s"multipart/form-data; boundary=$boundary"))
+          entity
         )
     }
   }
