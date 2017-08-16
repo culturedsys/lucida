@@ -1,6 +1,4 @@
-package training
-
-import model.Paragraph
+package model
 
 /**
   * Represents a feature template, either unigram or bigram.

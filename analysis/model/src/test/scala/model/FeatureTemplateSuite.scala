@@ -1,4 +1,4 @@
-package training
+package model
 
 import org.scalatest.FunSuite
 

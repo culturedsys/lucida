@@ -1,7 +1,7 @@
 package training
 
 import com.intel.imllib.crf.nlp.{CRF, CRFModel}
-import model.{SectionHeader, SubsectionHeader, SubsubsectionHeader, Title}
+import model._
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**

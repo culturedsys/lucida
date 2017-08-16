@@ -7,8 +7,9 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import cats.Semigroup.combine
 import cats.instances.all._
-import model.{SectionHeader, SubsectionHeader, SubsubsectionHeader, Title}
+import model._
 import RDDFunctions._
+import com.intel.imllib.crf.nlp.Implicits._
 
 /**
   * Train a model, keeping some tagged data separate to use as test data; report statistics based

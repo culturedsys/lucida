@@ -1,7 +1,7 @@
 package training
 
 import com.intel.imllib.crf.nlp.{Sequence, Token}
-import model.{BodyText, Tag, TrainingExtractor}
+import model._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 

@@ -1,9 +1,8 @@
 package analysis
 
 import com.intel.imllib.crf.nlp.{CRFModel, Sequence, Token}
-import model.{Paragraph, Structure, Tag, TaggedParagraph}
+import model.{Paragraph, Structure, Tag, TaggedParagraph, FeatureTemplate, Features}
 import tedzs._
-import training.{FeatureTemplate, Features}
 
 /**
   * Functions for analysing and comparing documents.
@@ -116,7 +115,7 @@ object StringCosts extends Costs[Paragraph] {
       costs(i)(j) = math.min(math.min(insertCost, deleteCost), changeCost)
     }
 
-    costs(from.label.length)(to.label.length)
+    costs(fromString.length)(toString.length)
   }
 }
 

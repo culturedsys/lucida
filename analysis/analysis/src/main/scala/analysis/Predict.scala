@@ -4,8 +4,7 @@ import java.io.{ByteArrayInputStream, FileInputStream, FileNotFoundException, IO
 import java.nio.file.{Files, Paths}
 
 import com.intel.imllib.crf.nlp.{CRFModel, Sequence, Token}
-import model.{DocExtractor, Structure, Tag, TaggedParagraph}
-import training.{FeatureTemplate, Features}
+import model.{DocExtractor, Structure, Tag, TaggedParagraph, FeatureTemplate, Features}
 
 /**
   * An application to predict the structure of supplied documents (and time how long it takes to
