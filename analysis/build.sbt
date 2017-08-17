@@ -6,6 +6,11 @@ scalaVersion := "2.11.11"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 libraryDependencies +=   "org.scalanlp" %% "breeze" % "0.12"
 
+// Web service client
+libraryDependencies += ws
 
+libraryDependencies += "com.typesafe.play" %% "play-server" % "2.6.3" % "test"
+libraryDependencies += "com.typesafe.play" %% "play-akka-http-server" % "2.6.3" % "test"
 
-
+// Cats for functional programming utilities
+libraryDependencies += "commons-io" % "commons-io" % "2.5" % "test"
