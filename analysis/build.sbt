@@ -14,3 +14,7 @@ libraryDependencies += "com.typesafe.play" %% "play-akka-http-server" % "2.6.3" 
 
 // Cats for functional programming utilities
 libraryDependencies += "commons-io" % "commons-io" % "2.5" % "test"
+
+enablePlugins(JavaAppPackaging)
+
+mainClass in Compile := Some("analysis.Service")
