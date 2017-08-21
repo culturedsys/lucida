@@ -1,5 +1,9 @@
 package training
 
+import java.io.FileOutputStream
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Path, Paths}
+
 import com.intel.imllib.crf.nlp.{CRF, CRFModel}
 import model._
 import org.apache.spark.{SparkConf, SparkContext}
@@ -34,7 +38,10 @@ object Train extends TrainBase {
     val model = CRF.train(templates, trainingData)
     val end = System.currentTimeMillis()
 
-    CRFModel.saveBinaryFile(model, outputPath)
+    val os = new FileOutputStream(outputPath)
+    CRFModel.saveStream(model, os)
+    os.close()
+
     println(s"Time for training: ${end - start} ms")
   }
 }

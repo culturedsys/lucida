@@ -21,7 +21,7 @@ object Predict {
     val docPath = args(1)
 
     try {
-      val model = CRFModel.loadBinaryFile(modelPath)
+      val model = CRFModel.loadStream(new FileInputStream(modelPath))
       val docData = Files.readAllBytes(Paths.get(docPath))
 
       val paras = DocExtractor.extract(new ByteArrayInputStream(docData)).get
