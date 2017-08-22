@@ -25,6 +25,16 @@ const fakeDocument = {
   ]
 }
 
+/**
+ * Create a fake fetch function, that mimics the window.fetch function, but
+ * returns fake data. Returns a pair, the first element being the fake fetch
+ * function, and the second is a list which will contain an entry for each
+ * call made to the fetch function.
+ *
+ * @param status the status code to use for responses from fetch function.
+ * If this is 200, the response will contain the fake data listed above;
+ * otherwise, it will contain a JSON object of the form {error: "message"}.
+ */
 function makeFakeFetch(status) {
   const log = [];
 
@@ -53,7 +63,13 @@ function makeFakeFetch(status) {
     log.push([method, url, body]);
 
     if ( method === 'GET') {
-      let response = new Response(JSON.stringify([fakeDocument, fakeDocument]), options);
+      let value;
+      if (status === 200)
+        value = [fakeDocument, fakeDocument];
+      else
+        value = {error: "A fake error"};
+
+      let response = new Response(JSON.stringify(value), options);
       return Promise.resolve(response);
     } else {
       return Promise.resolve(new Response('["fake-id-string"]'), options);

@@ -1,18 +1,30 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import Upload from "./Upload";
+import Compare from "./Compare";
+import Waiting from "./Waiting";
+import Error from "./Error";
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.props.appState.setComponent(this);
+    this.state = {
+      waiting: false,
+      complete: false,
+      from: null,
+      to: null,
+      error: null
+    };
+  }
+
   render() {
     return (
       <div className="App">
-        <div className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h2>Welcome to React</h2>
-        </div>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+        {(this.state.error !== null) ? <Error message={this.state.error} /> : "" }
+        <Upload handler={this.props.appState.handleUpload.bind(this.props.appState)}/>
+        {(this.state.waiting) ? <Waiting /> : ""}
+        {(this.state.completed) ? <Compare from={this.state.from} to={this.state.to} /> : ""}
       </div>
     );
   }
