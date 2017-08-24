@@ -118,7 +118,7 @@ object DocExtractor extends Extractor {
         }
 
         val features = Paragraph(
-          text.split(' ').take(10).mkString,
+          text,
           words,
           position,
           if (possibleSubSubhead)
