@@ -30,7 +30,7 @@ class DocumentTree extends Component {
     let childrenElement = <span />;
 
     if (children.length > 0) {
-      childrenElement = <ul className="DocumentTree-children">{children.map(this.element)}</ul>
+      childrenElement = <ul className="DocumentTree-children">{children.map((child) => this.element(child))}</ul>
     }
 
     return (<li className={"DocumentTree-element DocumentTree-" + doc.change} key={index}>

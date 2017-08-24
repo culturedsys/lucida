@@ -13,7 +13,7 @@
 }
 
 .DocumentTree-inserted {
-  background-color: rgba(0, 128, 0, 0.51);
+  background-color: rgb(128, 255, 128);
 }
 .DocumentTree-inserted:before {
   content: "+";
@@ -22,7 +22,7 @@
 }
 
 .DocumentTree-deleted {
-  background-color: rgba(255, 0, 0, 0.5);
+  background-color: rgb(255, 128, 128);
 }
 .DocumentTree-deleted:before {
   content: "\2212";
@@ -31,5 +31,5 @@
 }
 
 .DocumentTree-changed {
-  background-color: rgba(255, 255, 0, 0.51);
+  background-color: rgb(255, 255, 128);
 }

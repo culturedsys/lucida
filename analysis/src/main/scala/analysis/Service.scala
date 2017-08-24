@@ -80,7 +80,7 @@ object Service {
 
       val service = new Service(client, base, compare)
 
-      system.scheduler.schedule(0 seconds, 10 seconds)(service.processAllRequests())
+      system.scheduler.schedule(0 seconds, 1 seconds)(service.processAllRequests())
     }
   }
 }
@@ -93,8 +93,8 @@ object Serializers {
     def writes(structure: Structure[(Paragraph, Change)]): JsValue = {
       Json.obj(
         "description" -> structure.content._1.description,
-        "change" -> structure.content._2.toString,
-        "children" -> Json.arr(structure.children.map(writes))
+        "change" -> structure.content._2.toString.toLowerCase,
+        "children" -> structure.children.map(writes)
       )
     }
   }
