@@ -69,7 +69,8 @@ class ApiController @Inject() (cc: ControllerComponents, system: ActorSystem)
         Accepted("")
 
       case ResponseData(_, data) =>
-        Ok(data).as("text/json")
+        val status = if ((Json.parse(data) \ "error").isDefined) BadRequest else Ok
+        status(data).as("text/json")
     }
   }
 

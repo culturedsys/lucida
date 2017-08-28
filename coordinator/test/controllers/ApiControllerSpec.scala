@@ -159,6 +159,20 @@ class ApiControllerSpec extends WordSpec with Matchers
 
       contentType(result).get should be("text/json")
     }
+
+    "return 400 if the request contains an error message" in {
+      val controller = defaultController
+      controller.store ! AddRequest(Array(), Array())
+      val id = expectMsgType[RequestAdded].id
+      controller.store !
+        AddResponse(id, """{"error": "An error message"}""".getBytes(StandardCharsets.UTF_8))
+      expectMsgType[ResponseAdded]
+
+      val result = controller.queryResponse(id).apply(FakeRequest())
+      status(result) should be(BAD_REQUEST)
+
+      contentType(result).get should be("text/json")
+    }
   }
 
   "addResponse" should {
