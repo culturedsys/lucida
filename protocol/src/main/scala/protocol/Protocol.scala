@@ -6,6 +6,7 @@ import javax.mail.util.ByteArrayDataSource
 
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
+import org.apache.commons.io.IOUtils
 import play.api.http.HttpEntity
 import play.api.mvc.MultipartFormData.FilePart
 import play.core.formatters
@@ -39,15 +40,13 @@ object Protocol {
     * Convert multipart/form-data to a sequence of byte arrays representing the files in the
     * multipart data.
     */
-  def multipartToFiles(multipart: Array[Byte], contentType: String): Seq[Array[Byte]] = {
+  def multipartToFiles(multipart: Array[Byte], contentType: String): Seq[(String, Array[Byte])] = {
     val mp = new MimeMultipart(new ByteArrayDataSource(multipart, contentType))
 
     (0 until mp.getCount).map { i =>
       val part = mp.getBodyPart(i)
-      val size = part.getSize
-      val data = Array.ofDim[Byte](size)
-      part.getInputStream.read(data)
-      data
+      val data = IOUtils.toByteArray(part.getInputStream)
+      (part.getFileName , data)
     }
   }
 }

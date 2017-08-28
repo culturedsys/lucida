@@ -10,7 +10,9 @@
 .DocumentTree-description {
   padding-top: 0.25em;
   padding-bottom: 0.25em;
-
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .DocumentTree-inserted {

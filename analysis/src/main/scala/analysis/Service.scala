@@ -46,7 +46,12 @@ class Service(client: WSClient, base: URL,
 
     client.url(request.toString).post("").flatMap { response =>
       val files = Protocol.multipartToFiles(response.bodyAsBytes.toArray, response.contentType)
-      val documents = files.map(data => DocExtractor.extract(new ByteArrayInputStream(data)))
+      val documents = files.map { case (filename, data) =>
+        DocExtractor.extract(new ByteArrayInputStream(data)).recoverWith {case e =>
+          Failure(new IllegalArgumentException(s"Could not read $filename. Is it a Word DOC file? "
+            + e.getMessage))
+        }
+      }
 
       documents match {
         case Seq(Success(from), Success(to)) =>
@@ -55,10 +60,10 @@ class Service(client: WSClient, base: URL,
           client.url(request.toString)
             .put(Json.arr(Json.toJson(fromDiff), Json.toJson(toDiff)))
 
-        case List(Failure(e), _) =>
-          Future.failed(new IllegalArgumentException(e))
-        case List(_, Failure(e)) =>
-          Future.failed(new IllegalArgumentException(e))
+        case Seq(Failure(e), _) =>
+          Future.failed(e)
+        case Seq(_, Failure(e)) =>
+          Future.failed(e)
         case _ =>
           Future.failed(new IllegalArgumentException("Exactly two documents must be specified"))
       }

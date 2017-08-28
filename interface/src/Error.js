@@ -5,8 +5,14 @@ import React, {Component} from 'react';
  */
 export default class Error extends Component {
   render() {
-    return <div className="alert alert-danger">
-      {this.props.message}
-    </div>
+    return (<div className="alert alert-danger">
+      {(this.props.serverSide) ?
+          (<div>
+            <p>The server could not process this request.</p>
+            <pre>{this.props.message}</pre>
+          </div>) :
+        this.props.message
+      }
+    </div>);
   }
 }

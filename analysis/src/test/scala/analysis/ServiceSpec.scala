@@ -128,6 +128,25 @@ class ServiceSpec extends WordSpec with Matchers {
         } should not be(empty)
       }
     }
+
+    "post an error message if something other than a word doc is uploaded" in {
+      val fakeRequestData = Seq(
+        ("from", "from.doc", Some("application/msword"),
+          IOUtils.toByteArray(classOf[ServiceSpec].getResourceAsStream("not-a-doc.txt"))),
+        ("to", "to.doc", Some("application/msword"),
+          IOUtils.toByteArray(classOf[ServiceSpec].getResourceAsStream("sample-changed-body.doc")))
+      )
+      withFakeServer(fakeRequestData) { (client, base, log) =>
+        val service = new Service(client, base, compare)
+        val uri = fakeRequests.head
+        Await.result(service.processRequest(uri), timeout)
+
+        log.filter { case (method, path, body) =>
+          body.length > 0 &&
+            ((Json.parse(body) \ "error").get.as[String].startsWith("Could not read from.doc"))
+        } should not be(empty)
+      }
+    }
   }
 
   "processAllRequests" should {

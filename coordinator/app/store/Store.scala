@@ -15,8 +15,8 @@ class Store extends Actor with ActorLogging {
 
   override def receive: Receive = state(Map(), Map(), Map())
 
-  def state(requests: Map[UUID, Timestamped[(Array[Byte], Array[Byte])]],
-            pending: Map[UUID, Timestamped[(Array[Byte], Array[Byte])]],
+  def state(requests: Map[UUID, Timestamped[(Document, Document)]],
+            pending: Map[UUID, Timestamped[(Document, Document)]],
             responses: Map[UUID, Timestamped[Array[Byte]]]) : Receive = {
     case AddRequest(from, to) =>
       log.debug("Received AddRequest")
@@ -78,15 +78,17 @@ class Store extends Actor with ActorLogging {
   }
 }
 
+case class Document(name: String, data: Array[Byte])
+
 object Store {
-  case class AddRequest(from: Array[Byte], to: Array[Byte])
+  case class AddRequest(from: Document, to: Document)
   case class RequestAdded(id: UUID)
 
   case object ListRequests
   case class RequestList(ids: Seq[UUID])
 
   case class ClaimRequest(id: UUID)
-  case class RequestData(id: UUID, from: Array[Byte], to: Array[Byte])
+  case class RequestData(id: UUID, from: Document, to: Document)
 
   case class AddResponse(id: UUID, response: Array[Byte])
   case class ResponseAdded(id: UUID)

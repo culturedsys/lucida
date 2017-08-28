@@ -9,11 +9,10 @@ import akka.util.Timeout
 import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc._
-import store.Store
+import store.{Document, Store}
 import store.Store._
 
 import scala.concurrent.duration._
-
 import protocol.Protocol
 
 /**
@@ -41,8 +40,8 @@ class ApiController @Inject() (cc: ControllerComponents, system: ActorSystem)
         val contentType = Some("application/msword")
 
         val entity = Protocol.filesToMultipart(
-          ("from", "from.doc", contentType, from),
-          ("to", "to.doc", contentType, to)
+          ("from", from.name, contentType, from.data),
+          ("to", to.name, contentType, to.data)
         )
 
         Result (
@@ -53,7 +52,9 @@ class ApiController @Inject() (cc: ControllerComponents, system: ActorSystem)
   }
 
   def addRequest = Action.async(parse.multipartFormData) { implicit request =>
-    val Seq(from, to) = request.body.files.map(fp => Files.readAllBytes(fp.ref.path))
+    val Seq(from, to) = request.body.files.map { fp =>
+      Document(fp.filename, Files.readAllBytes(fp.ref.path))
+    }
     (store ? AddRequest(from, to)).map {
       case RequestAdded(id) =>
         Ok(Json.toJson(Seq(id)))

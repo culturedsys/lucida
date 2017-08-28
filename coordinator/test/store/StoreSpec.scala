@@ -22,13 +22,13 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     val store = system.actorOf(Store.props)
 
     "allow adding a request" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       expectMsgType[RequestAdded]
     }
 
     "return different ids when adding two requests" in {
-      store ! AddRequest(Array(), Array())
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
 
       val Seq(response1, response2) = receiveN(2)
 
@@ -50,7 +50,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
       "return that request's id" in {
         val store = system.actorOf(Store.props)
 
-        store ! AddRequest(Array(), Array())
+        store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
         val id = expectMsgType[RequestAdded].id
 
         store ! ListRequests
@@ -64,9 +64,9 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
       "return all those requests ids" in {
         val store = system.actorOf(Store.props)
 
-        store ! AddRequest(Array(), Array())
-        store ! AddRequest(Array(), Array())
-        store ! AddRequest(Array(), Array())
+        store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
+        store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
+        store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
 
         val ids = receiveN(3).map {
           case RequestAdded(id) => id
@@ -86,15 +86,15 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
 
     "return a request with matching ID" in {
       val (expectedFrom, expectedTo) = (Array(0.toByte), Array(1.toByte))
-      store ! AddRequest(expectedFrom, expectedTo)
+      store ! AddRequest(Document("from.doc", expectedFrom), Document("to.doc", expectedTo))
 
       val id = expectMsgType[RequestAdded].id
 
       store ! ClaimRequest(id)
 
       val RequestData(_, actualFrom, actualTo) = expectMsgType[RequestData]
-      actualFrom should equal(expectedFrom)
-      actualTo should equal(expectedTo)
+      actualFrom.data should equal(expectedFrom)
+      actualTo.data should equal(expectedTo)
     }
 
     "return NotFound when there is no matching id" in {
@@ -105,7 +105,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
 
     "remove the request from the request list" in {
       val (expectedFrom, expectedTo) = (Array(0.toByte), Array(1.toByte))
-      store ! AddRequest(expectedFrom, expectedTo)
+      store ! AddRequest(Document("from.doc", expectedFrom), Document("to.doc", expectedTo))
 
       val id = expectMsgType[RequestAdded].id
 
@@ -128,7 +128,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "return ResponseAdded when there is a matching request" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       store ! AddResponse(id, Array())
@@ -136,7 +136,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "return ResponseAdded when there is a matching pending request" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       store ! ClaimRequest(id)
@@ -147,7 +147,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "remove the corresponding request" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       store ! AddResponse(id, Array())
@@ -161,7 +161,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "return ResponseRepeated when a response is added twice for the same ID" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       store ! ClaimRequest(id)
@@ -185,7 +185,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "return NotCompleted for an ID that matches a request but not a response" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       store ! GetResponse(id)
@@ -194,7 +194,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "return NotCompleted for an ID that matches a pending request" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       store ! ClaimRequest(id)
@@ -206,7 +206,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "return ResponseData for an ID that matches a response" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       val expected = Array(0.toByte)
@@ -225,7 +225,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
   "Store#Cleanup" should {
     val store = system.actorOf(Store.props)
     "remove an old request" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       Thread.sleep(1)
@@ -239,7 +239,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "remove an old response" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       store ! AddResponse(id, Array())
@@ -256,7 +256,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "not remove a not old request" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       store ! Cleanup(Duration.ofDays(1))
@@ -267,7 +267,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "not remove a not old response" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       store ! AddResponse(id, Array())
@@ -282,7 +282,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "move an un-responded-to pending request back to the request list" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       store ! ClaimRequest(id)
@@ -296,7 +296,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
     }
 
     "not move a responded-to request from the pending list to the request list" in {
-      store ! AddRequest(Array(), Array())
+      store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       store ! ClaimRequest(id)

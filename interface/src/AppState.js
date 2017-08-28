@@ -35,7 +35,8 @@ export default class AppState {
     const toFile = formdata.get('toFile');
     if (fromFile.name === "" || toFile.name === "") {
       this.component.setState({
-        error: 'Select two documents to upload and compare'
+        error: 'Select two documents to upload and compare',
+        serverSideError: false
       });
       return;
     }
@@ -83,7 +84,8 @@ export default class AppState {
     this.component.setState({
       completed: false,
       waiting: false,
-      error: e.message + ". Please try again."
+      error: e.message,
+      serverSideError: true
     })
   }
 }

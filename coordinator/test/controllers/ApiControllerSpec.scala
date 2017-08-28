@@ -16,6 +16,7 @@ import play.api.mvc.MultipartFormData.FilePart
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import protocol.Protocol
+import store.Document
 import store.Store._
 
 import scala.concurrent.Await
@@ -43,7 +44,7 @@ class ApiControllerSpec extends WordSpec with Matchers
 
     "respond with an array containing the id of an added Request" in {
       val controller = defaultController
-      controller.store ! AddRequest(Array(), Array())
+      controller.store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       val result = controller.listRequests.apply(FakeRequest(GET, "/"))
@@ -61,7 +62,7 @@ class ApiControllerSpec extends WordSpec with Matchers
     }
 
     "respond with Ok if the id does match a request" in {
-      controller.store ! AddRequest(Array(), Array())
+      controller.store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       val result = controller.claimRequest(id).apply(FakeRequest(POST, "/"))
@@ -70,7 +71,7 @@ class ApiControllerSpec extends WordSpec with Matchers
 
     val fromData = "from".getBytes
     val toData = "to".getBytes
-    controller.store ! AddRequest(fromData, toData)
+    controller.store ! AddRequest(Document("from.doc", fromData), Document("to.doc", toData))
     val id = expectMsgType[RequestAdded].id
 
     val result = controller.claimRequest(id).apply(FakeRequest(POST, "/"))
@@ -84,8 +85,8 @@ class ApiControllerSpec extends WordSpec with Matchers
       val contentType = Await.result(result, 5 seconds).body.contentType
       val Seq(fromContent, toContent) = Protocol.multipartToFiles(bytes.toArray, contentType.get)
 
-      fromContent should equal(fromData)
-      toContent should equal(toData)
+      fromContent._2 should equal(fromData)
+      toContent._2 should equal(toData)
     }
   }
 
@@ -127,8 +128,8 @@ class ApiControllerSpec extends WordSpec with Matchers
       controller.store ! ClaimRequest(id)
       val RequestData(_, from, to) = expectMsgType[RequestData]
 
-      from should equal(fromData)
-      to should equal(toData)
+      from.data should equal(fromData)
+      to.data should equal(toData)
     }
   }
 
@@ -140,7 +141,7 @@ class ApiControllerSpec extends WordSpec with Matchers
 
     "return 202 if the ID is known but not yet completed" in {
       val controller = defaultController
-      controller.store ! AddRequest(Array(), Array())
+      controller.store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       val result = controller.queryResponse(id).apply(FakeRequest())
@@ -149,7 +150,7 @@ class ApiControllerSpec extends WordSpec with Matchers
 
     "return JSON if the ID has been completed" in {
       val controller = defaultController
-      controller.store ! AddRequest(Array(), Array())
+      controller.store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
       controller.store ! AddResponse(id, "[{},{}]".getBytes(StandardCharsets.UTF_8))
       expectMsgType[ResponseAdded]
@@ -162,7 +163,7 @@ class ApiControllerSpec extends WordSpec with Matchers
 
     "return 400 if the request contains an error message" in {
       val controller = defaultController
-      controller.store ! AddRequest(Array(), Array())
+      controller.store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
       controller.store !
         AddResponse(id, """{"error": "An error message"}""".getBytes(StandardCharsets.UTF_8))
@@ -183,7 +184,7 @@ class ApiControllerSpec extends WordSpec with Matchers
 
     "add the response for a known ID" in {
       val controller = defaultController
-      controller.store ! AddRequest(Array(), Array())
+      controller.store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
       val result = controller.addResponse(id)
