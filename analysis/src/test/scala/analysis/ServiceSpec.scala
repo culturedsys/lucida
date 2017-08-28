@@ -1,14 +1,15 @@
 package analysis
 
-import java.net.URI
+import java.net.{URI, URL}
 import java.nio.file.Paths
 
 import model._
 import org.apache.commons.io.IOUtils
 import org.scalatest.{Matchers, WordSpec}
+import play.api.http.MediaType.parse
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
-import play.api.mvc.{ResponseHeader, Result}
+import play.api.mvc.{BodyParsers, ResponseHeader, Result}
 import play.api.test.WsTestClient
 import play.core.server.Server
 import play.api.routing.sird.{PUT, _}
@@ -34,8 +35,10 @@ class ServiceSpec extends WordSpec with Matchers {
 
   val timeout = 1 minute
 
-  def withFakeServer[T](block: (WSClient, URI, Seq[String]) => T): T = {
-    val log = mutable.ArrayBuffer[String]()
+  def withFakeServer[T](fakeRequestData: Seq[(String, String, Option[String], Array[Byte])])
+                       (block: (WSClient, URL, Seq[(String, String, String)]) =>
+    T): T = {
+    val log = mutable.ArrayBuffer[(String, String, String)]()
 
     Server.withRouterFromComponents() { components =>
       import play.api.mvc.Results._
@@ -43,12 +46,12 @@ class ServiceSpec extends WordSpec with Matchers {
 
       {
         case GET(p"/requests/") => Action {
-          log.append("GET /requests/")
+          log.append(("GET", "/requests/", ""))
           Ok(Json.toJson(fakeRequests))
         }
 
         case POST(p"/requests/$id") => Action {
-          log.append(s"POST /requests/$id")
+          log.append(("POST", s"/requests/$id", ""))
           val entity = Protocol.filesToMultipart(fakeRequestData: _*)
           Result (
             header = ResponseHeader(200, Map.empty),
@@ -56,14 +59,14 @@ class ServiceSpec extends WordSpec with Matchers {
           )
         }
 
-        case PUT(p"/requests/$id") => Action {
-          log.append(s"PUT /requests/$id")
+        case PUT(p"/requests/$id") => Action(components.playBodyParsers.json) { request =>
+          log.append(("PUT", s"/requests/$id", request.body.toString))
           Ok("")
         }
       }
     } { implicit port =>
       WsTestClient.withClient { client =>
-        block(client, new URI(s"http://localhost:$port/"), log)
+        block(client, new URL(s"http://localhost:$port"), log)
       }
     }
   }
@@ -76,7 +79,7 @@ class ServiceSpec extends WordSpec with Matchers {
 
   "getRequestList" should {
     "return the list of request urls" in {
-      withFakeServer { (client, base, _) =>
+      withFakeServer(fakeRequestData) { (client, base, _) =>
         val service = new Service(client, base, compare)
         val requestList = Await.result(service.getRequestList(), timeout)
         requestList.map { uri =>
@@ -88,14 +91,14 @@ class ServiceSpec extends WordSpec with Matchers {
 
   "processRequest" should {
     "call the comparison function with the request data" in {
-      withFakeServer { (client, base, _) => {
+      withFakeServer(fakeRequestData) { (client, base, _) => {
           var called = false
           def checkedCompare(from: Seq[Paragraph], to: Seq[Paragraph]) = {
             called = true
             compare(from, to)
           }
           val service = new Service(client, base, checkedCompare)
-          Await.result(service.processRequest(URI.create(fakeRequests.head)), timeout)
+          Await.result(service.processRequest(fakeRequests.head), timeout)
 
           called should be(true)
         }
@@ -103,13 +106,25 @@ class ServiceSpec extends WordSpec with Matchers {
     }
 
     "upload the result of the comparison" in {
-      withFakeServer { (client, base, log) =>
+      withFakeServer(fakeRequestData) { (client, base, log) =>
         val service = new Service(client, base, compare)
-        val uri = URI.create(fakeRequests.head)
+        val uri = fakeRequests.head
         Await.result(service.processRequest(uri), timeout)
 
-        log.filter { entry =>
-          entry.startsWith("PUT") && entry.endsWith(uri.toString)
+        log.filter { case (method, path, _) =>
+          method == "PUT" && path.endsWith(uri)
+        } should not be(empty)
+      }
+    }
+
+    "post an error message if only 1 document is uploaded" in {
+      withFakeServer(fakeRequestData.take(1)) { (client, base, log) =>
+        val service = new Service(client, base, compare)
+        val uri = fakeRequests.head
+        Await.result(service.processRequest(uri), timeout)
+
+        log.filter { case (method, path, body) =>
+          body.length > 0 && ((Json.parse(body) \ "error").isDefined)
         } should not be(empty)
       }
     }
@@ -117,7 +132,7 @@ class ServiceSpec extends WordSpec with Matchers {
 
   "processAllRequests" should {
     "call the comparison function for each request" in {
-      withFakeServer { (client, base, _) =>
+      withFakeServer(fakeRequestData) { (client, base, _) =>
         var called = 0
 
         def countCompare(from: Seq[Paragraph], to: Seq[Paragraph]) = {
@@ -133,12 +148,12 @@ class ServiceSpec extends WordSpec with Matchers {
     }
 
     "post results for each request" in {
-      withFakeServer { (client, base, log) =>
+      withFakeServer(fakeRequestData) { (client, base, log) =>
         val service = new Service(client, base, compare)
         Await.result(service.processAllRequests(), timeout)
 
-        log.filter { entry =>
-          entry.startsWith("PUT") && fakeRequests.exists(entry.endsWith)
+        log.filter { case (method, path, _) =>
+          method == "PUT" && fakeRequests.exists(path.endsWith)
         } should not be(empty)
       }
     }

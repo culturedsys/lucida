@@ -1,13 +1,14 @@
 package analysis
 
 import java.io.ByteArrayInputStream
-import java.net.URI
+import java.net.{URI, URL}
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.intel.imllib.crf.nlp.CRFModel
 import com.typesafe.config.ConfigFactory
 import model.{DocExtractor, Paragraph, Structure}
+import play.api.Logger
 import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.libs.ws.{DefaultBodyWritables, WSClient}
 import play.api.libs.ws.ahc.AhcWSClient
@@ -16,42 +17,57 @@ import protocol.Protocol
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Success
+import scala.util.{Failure, Success}
 import scala.concurrent.duration._
 
 /**
   * The analysis service that retrieves requests from the coordinator, processes them, and
   * returns responses.
   */
-class Service(client: WSClient, base: URI,
+class Service(client: WSClient, base: URL,
               compare: (Seq[Paragraph], Seq[Paragraph]) =>
                 (Structure[(Paragraph, Change)], Structure[(Paragraph, Change)])
 ) {
 
-  val requestsBase = base.resolve("requests/")
+  val requestsBase = new URL(base, "requests/")
 
-  def getRequestList(): Future[Seq[URI]] = {
+  def getRequestList(): Future[Seq[URL]] = {
     client.url(requestsBase.toString).get().map { response =>
-      response.json.validate[Seq[String]].get.map(uri => requestsBase.resolve(uri))
+      response.json.validate[Seq[String]].get.map(url => new URL(requestsBase, url))
     }
   }
 
-  def processRequest(request: URI): Future[Unit] = {
+  def processRequest(request: String): Future[Unit] = {
+    processRequest(new URL(requestsBase, request))
+  }
+
+  def processRequest(request: URL): Future[Unit] = {
     implicit val structureToJson = Serializers.structureToJson
 
-    client.url(requestsBase.resolve(request).toString).post("").flatMap { response =>
+    client.url(request.toString).post("").flatMap { response =>
       val files = Protocol.multipartToFiles(response.bodyAsBytes.toArray, response.contentType)
-      require(files.size == 2)
       val documents = files.map(data => DocExtractor.extract(new ByteArrayInputStream(data)))
 
-      val Seq(Success(from), Success(to)) = documents
+      documents match {
+        case Seq(Success(from), Success(to)) =>
+          val (fromDiff, toDiff) = compare(from, to)
 
-      val (fromDiff, toDiff) = compare(from, to)
+          client.url(request.toString)
+            .put(Json.arr(Json.toJson(fromDiff), Json.toJson(toDiff)))
 
-      client.url(requestsBase.resolve(request).toString)
-        .put(Json.arr(Json.toJson(fromDiff), Json.toJson(toDiff)))
-    }.map {response =>
-      require(response.status == 200)
+        case List(Failure(e), _) =>
+          Future.failed(new IllegalArgumentException(e))
+        case List(_, Failure(e)) =>
+          Future.failed(new IllegalArgumentException(e))
+        case _ =>
+          Future.failed(new IllegalArgumentException("Exactly two documents must be specified"))
+      }
+    }.recoverWith {
+      case e =>
+        client.url(request.toString).put(Json.obj("error" -> e.getMessage))
+    }.map { response =>
+      if (response.status != 200)
+        Logger.error(s"Could not post response: ${response.status}")
     }
   }
 
@@ -63,25 +79,23 @@ class Service(client: WSClient, base: URI,
 }
 
 object Service {
+
+  val config = ConfigFactory.load()
+
+  val base = new URL(config.getString("lucida.api.base"))
+
+  implicit val system = ActorSystem("ServiceSystem")
+  val client = AhcWSClient()(ActorMaterializer())
+
+
   def main(args: Array[String]): Unit = {
+    val model = CRFModel.loadStream(getClass.getResourceAsStream("model.data"))
 
-    val config = ConfigFactory.load()
+    def compare(from: Seq[Paragraph], to: Seq[Paragraph]) = Analysis.compare(from, to, model)
 
-    val base = URI.create(config.getString("lucida.api.base"))
-    val modelUrl = URI.create(config.getString("lucida.model.url"))
+    val service = new Service(client, base, compare)
 
-    implicit val system = ActorSystem("ServiceSystem")
-    val client = AhcWSClient()(ActorMaterializer())
-
-    client.url(modelUrl.toString).get().map { result =>
-      val model = CRFModel.loadStream(new ByteArrayInputStream(result.bodyAsBytes.toArray))
-
-      def compare(from: Seq[Paragraph], to: Seq[Paragraph]) = Analysis.compare(from, to, model)
-
-      val service = new Service(client, base, compare)
-
-      system.scheduler.schedule(0 seconds, 1 seconds)(service.processAllRequests())
-    }
+    system.scheduler.schedule(0 seconds, 1 seconds)(service.processAllRequests())
   }
 }
 
