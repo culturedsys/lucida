@@ -15,14 +15,18 @@ object Compare {
       System.exit(1)
     }
 
-    val model = CRFModel.loadBinaryFile(args(0))
+    val model = CRFModel.loadStream(new FileInputStream(args(0)))
     val fromDoc = DocExtractor.extract(new FileInputStream(args(1))).get
     val toDoc = DocExtractor.extract(new FileInputStream(args(2))).get
-
-    val (fromChanges, toChanges) = Analysis.compare(fromDoc, toDoc, model)
+    
+    val stats@Stats((fromChanges, toChanges), _, _) = Stats.withStats {
+      Analysis.compare(fromDoc, toDoc, model)
+    }
 
     output(fromChanges)
     output(toChanges)
+
+    stats.report()
   }
 
   def output(structure: Structure[(Paragraph, Change)], depth: Int = 0): Unit = {

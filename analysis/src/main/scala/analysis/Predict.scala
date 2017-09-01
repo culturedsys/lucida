@@ -27,14 +27,16 @@ object Predict {
       val paras = DocExtractor.extract(new ByteArrayInputStream(docData)).get
       val seq = Sequence(FeatureTemplate.tokensAsStrings(Features.templates, paras)
                 .map(Token.put).toArray)
-      val start = System.currentTimeMillis()
-      val Array(tags) = model.predict(Array(seq))
-      val end = System.currentTimeMillis()
+
+      val stats@Stats(Array(tags), _, _) = Stats.withStats(model.predict(Array(seq)))
+
       val taggedParas = paras.zip(tags.sequence).map {
         case (para, token) => TaggedParagraph.addTag(para, Tag.fromString(token.label))
       }
+
       output(Structure.fromParagraphs(taggedParas), 0)
-      println(s"Time taken in prediction: ${end - start} ms")
+
+      stats.report()
     } catch {
       case e: IOException =>
         println(s"Could not read data: ${e.getMessage}")

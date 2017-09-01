@@ -1,6 +1,7 @@
 package training
 
 import java.io.FileOutputStream
+import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path, Paths}
 
@@ -12,7 +13,7 @@ import org.apache.spark.{SparkConf, SparkContext}
   * A driver application to train a model and save it to a file
   */
 object Train extends TrainBase {
-  def main(args: Array[String]) = {
+  def main(args: Array[String]): Unit = {
     if (args.length < 1) {
       println("Supply path to training data")
       System.exit(1)
@@ -42,6 +43,9 @@ object Train extends TrainBase {
     CRFModel.saveStream(model, os)
     os.close()
 
-    println(s"Time for training: ${end - start} ms")
+    new PrintWriter(new FileOutputStream("train.log", true)) {
+      println(s"Time for training: ${end - start} ms")
+      close()
+    }
   }
 }

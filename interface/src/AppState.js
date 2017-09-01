@@ -42,6 +42,9 @@ export default class AppState {
     }
 
     this.component.setState({waiting: true, completed: false, error: null});
+
+    const start = Date.now();
+
     this.fetch(this.base, {
       method: 'POST',
       body: formdata
@@ -53,10 +56,16 @@ export default class AppState {
         this.fetch(requestUrl).then((response) =>{
           if (response.status === 200) {
             return response.json().then((body) => {
-              let [from, to] = body;
+
+              const end = Date.now();
+              console.debug(`Time taken to process: ${end - start}`);
+
+              const [from, to] = body;
+
               this.component.setState({
                 from: from, to: to, completed: true, waiting: false
               });
+
               clearInterval(interval);
             });
           } else if (response.status === 202) {
