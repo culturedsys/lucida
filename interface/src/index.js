@@ -5,8 +5,24 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import AppState from './AppState';
 import App from './App';
+import About from './About';
 
 
-const state = new AppState(window.fetch.bind(window), new URL("requests/", window.location), 500);
 
-ReactDOM.render(<App appState={state} />, document.getElementById('root'));
+
+function main() {
+  let app;
+
+  if (window.location.hash === '#about')
+    app = <About />;
+  else {
+    const state = new AppState(window.fetch.bind(window),
+        new URL("requests/", window.location), 500);
+    app = <App appState={state}/>;
+  }
+
+  ReactDOM.render(app, document.getElementById('root'));
+}
+
+window.addEventListener('hashchange', main);
+main();
