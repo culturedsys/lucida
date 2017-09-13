@@ -9,6 +9,7 @@ import akka.stream.ActorMaterializer
 import akka.testkit.{ImplicitSender, TestKitBase}
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.WsScalaTestClient
+import play.api.Configuration
 import play.api.libs.Files.SingletonTemporaryFileCreator
 import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.mvc.{Headers, MultipartFormData}
@@ -33,7 +34,10 @@ class ApiControllerSpec extends WordSpec with Matchers
   implicit val mat = ActorMaterializer()
 
   def defaultController =
-    new ApiController(stubControllerComponents(playBodyParsers = stubPlayBodyParsers(mat)), system)
+    new ApiController(stubControllerComponents(playBodyParsers = stubPlayBodyParsers(mat)),
+      system, Configuration("lucida.coordinator.requestAge" -> "10 minutes",
+        "lucida.coordinator.pendingAge" -> "10 minutes",
+        "lucida.coordinator.responseAge" -> "10 minutes"))
 
   "listRequests" should {
     "respond with an empty array initially" in {

@@ -1,6 +1,6 @@
 package store
 
-import java.time.Duration
+import scala.concurrent.duration.Duration
 import java.util.UUID
 
 import akka.actor.ActorSystem
@@ -230,7 +230,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
 
       Thread.sleep(1)
 
-      store ! Cleanup(Duration.ofNanos(1))
+      store ! Cleanup(Duration.fromNanos(1))
       expectMsg(CleanupCompleted)
 
       store ! ClaimRequest(id)
@@ -247,7 +247,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
 
       Thread.sleep(1)
 
-      store ! Cleanup(Duration.ofNanos(1))
+      store ! Cleanup(Duration.fromNanos(1))
       expectMsg(CleanupCompleted)
 
       store ! GetResponse(id)
@@ -259,7 +259,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
       store ! AddRequest(Document("from.doc", Array()), Document("to.doc", Array()))
       val id = expectMsgType[RequestAdded].id
 
-      store ! Cleanup(Duration.ofDays(1))
+      store ! Cleanup(Duration("1 day"))
       expectMsg(CleanupCompleted)
 
       store ! ClaimRequest(id)
@@ -273,7 +273,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
       store ! AddResponse(id, Array())
       expectMsg(ResponseAdded(id))
 
-      store ! Cleanup(Duration.ofDays(1))
+      store ! Cleanup(Duration("1 day"))
       expectMsg(CleanupCompleted)
 
       store ! GetResponse(id)
@@ -288,7 +288,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
       store ! ClaimRequest(id)
       expectMsgType[RequestData]
 
-      store ! Cleanup(Duration.ofDays(1), Duration.ofDays(0), Duration.ofDays(1))
+      store ! Cleanup(Duration("1 day"), Duration("0 days"), Duration("1 day"))
       expectMsg(CleanupCompleted)
 
       store ! ListRequests
@@ -305,7 +305,7 @@ class StoreSpec extends TestKit(ActorSystem("CoordinatorSystem")) with ImplicitS
       store ! AddResponse(id, Array())
       expectMsg(ResponseAdded(id))
 
-      store ! Cleanup(Duration.ofDays(1), Duration.ofDays(0), Duration.ofDays(1))
+      store ! Cleanup(Duration("1 day"), Duration("0 days"), Duration("1 day"))
       expectMsg(CleanupCompleted)
 
       store ! ListRequests

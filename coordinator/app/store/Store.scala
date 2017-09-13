@@ -1,8 +1,9 @@
 package store
 
-import java.time.{Duration, Instant}
+import java.time.Instant
 import java.util.UUID
 
+import scala.concurrent.duration.Duration
 import scala.math.Ordering.Implicits._
 
 import akka.actor.{Actor, ActorLogging, Props}
@@ -66,7 +67,7 @@ class Store extends Actor with ActorLogging {
 
       def isYoungerThan[T](maxAge: Duration): ((Any, Timestamped[T])) => Boolean = {
         case (_, Timestamped(stamp, _)) =>
-          Duration.between(stamp, now) < maxAge
+          java.time.Duration.between(stamp, now).toNanos < maxAge.toNanos
       }
 
       val (newPending, oldPending) = pending.partition(isYoungerThan(pendingAge))

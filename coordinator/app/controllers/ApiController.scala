@@ -2,27 +2,39 @@ package controllers
 
 import java.nio.file.Files
 import java.util.UUID
+import javax.inject.Singleton
 
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
 import com.google.inject.Inject
+import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc._
 import store.{Document, Store}
 import store.Store._
+import protocol.Protocol
 
 import scala.concurrent.duration._
-import protocol.Protocol
 
 /**
   * Handles all the API requests.
   */
-class ApiController @Inject() (cc: ControllerComponents, system: ActorSystem)
+@Singleton
+class ApiController @Inject() (cc: ControllerComponents, system: ActorSystem,
+                               configuration: Configuration)
     extends AbstractController(cc) {
   lazy val store = system.actorOf(Store.props)
   implicit val ec = defaultExecutionContext
   implicit val timeout = Timeout(5 seconds)
+
+  val requestAge = configuration.get[FiniteDuration]("lucida.coordinator.requestAge")
+  val pendingAge = configuration.get[FiniteDuration]("lucida.coordinator.pendingAge")
+  val responseAge = configuration.get[FiniteDuration]("lucida.coordinator.responseAge")
+
+  val period = List(requestAge, pendingAge, responseAge).min
+
+  system.scheduler.schedule(period, period, store, Cleanup(requestAge, pendingAge, responseAge))
 
   def listRequests = Action.async { implicit request =>
     (store ? ListRequests).map {
