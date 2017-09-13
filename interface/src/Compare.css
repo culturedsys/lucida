@@ -1,3 +1,13 @@
+.Compare-legend {
+  text-align: center;
+}
+
+.Compare-legend-changed, .Compare-legend-inserted, .Compare-legend-deleted {
+  display: inline-block;
+  width: 1em;
+  margin-right: 1em;
+}
+
 .DocumentTree-children {
   padding-left: 0;
 }
@@ -15,7 +25,7 @@
   overflow: hidden;
 }
 
-.DocumentTree-inserted {
+.DocumentTree-inserted, .Compare-legend-inserted {
   background-color: rgb(128, 255, 128);
 }
 .DocumentTree-inserted:before {
@@ -24,7 +34,7 @@
   margin-left: -1.5em;
 }
 
-.DocumentTree-deleted {
+.DocumentTree-deleted, .Compare-legend-deleted {
   background-color: rgb(255, 128, 128);
 }
 .DocumentTree-deleted:before {
@@ -33,6 +43,6 @@
   margin-left: -1.5em;
 }
 
-.DocumentTree-changed {
+.DocumentTree-changed, .Compare-legend-changed {
   background-color: rgb(255, 255, 128);
 }

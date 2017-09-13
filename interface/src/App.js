@@ -27,6 +27,17 @@ class App extends Component {
         <Upload handler={this.props.appState.handleUpload.bind(this.props.appState)}/>
         {(this.state.waiting) ? <Waiting /> : ""}
         {(this.state.completed) ? <Compare from={this.state.from} to={this.state.to} /> : ""}
+        {
+          (!this.state.waiting && !this.state.completed) ?
+              <div>
+                <p>
+                  Download some sample documents to see how they compare. Try
+                  comparing <a href="sample.doc">this sample document
+                  </a> with <a href="sample-moved-section-entire.doc">this document
+                  with a section moved</a>.
+                </p>
+              </div> : ''
+        }
       </div>
     );
   }

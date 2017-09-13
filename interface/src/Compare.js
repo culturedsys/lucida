@@ -8,11 +8,27 @@ import './Compare.css';
 class Compare extends Component {
   render() {
     return (
-        <div className="Compare row">
-          <DocumentTree document={this.props.from} />
-          <DocumentTree document={this.props.to} />
+        <div>
+          <div className="Compare row">
+            <DocumentTree document={this.props.from} />
+            <DocumentTree document={this.props.to} />
+          </div>
+          <div className="Compare-legend row">
+            <div className="col-md-4">
+              <span className="Compare-legend-changed">&nbsp;</span>
+              Changed
+            </div>
+            <div className="col-md-4">
+              <span className="Compare-legend-inserted">+</span>
+              Inserted
+            </div>
+            <div className="col-md-4">
+              <span className="Compare-legend-deleted">&#x2212;</span>
+              Deleted
+            </div>
+          </div>
         </div>
-    )
+    );
   }
 }
 
@@ -22,7 +38,7 @@ class DocumentTree extends Component {
         <ul className="DocumentTree DocumentTree-children col-md-6">
           { this.element(this.props.document) }
         </ul>
-    )
+    );
   }
 
   element(doc, index) {
@@ -33,10 +49,12 @@ class DocumentTree extends Component {
       childrenElement = <ul className="DocumentTree-children">{children.map((child) => this.element(child))}</ul>
     }
 
-    return (<li className={"DocumentTree-element DocumentTree-" + doc.change} key={index}>
-      <div className="DocumentTree-description">{doc.description}</div>
-      { childrenElement }
-    </li>)
+    return (
+        <li className={"DocumentTree-element DocumentTree-" + doc.change} key={index}>
+          <div className="DocumentTree-description">{doc.description}</div>
+          { childrenElement }
+        </li>
+    );
   }
 }
 
