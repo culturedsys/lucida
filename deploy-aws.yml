@@ -1,14 +1,14 @@
 version: "2"
 services:
   coordinator: 
-    image: "422698029650.dkr.ecr.eu-west-2.amazonaws.com/coordinator-component:latest"
+    image: "422698029650.dkr.ecr.eu-west-2.amazonaws.com/coordinator-component:1.0.1"
     ports:
       - "80:9000"
     environment:
       - PLAY_APPLICATION_SECRET
     mem_limit: 300000000
   analysis:
-    image: "422698029650.dkr.ecr.eu-west-2.amazonaws.com/analysis-component:latest"
+    image: "422698029650.dkr.ecr.eu-west-2.amazonaws.com/analysis-component:1.0.1"
     environment:
       - LUCIDA_API_BASE=http://coordinator:9000
     links: 

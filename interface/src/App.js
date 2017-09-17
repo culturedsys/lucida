@@ -29,8 +29,8 @@ class App extends Component {
         {(this.state.completed) ? <Compare from={this.state.from} to={this.state.to} /> : ""}
         {
           (!this.state.waiting && !this.state.completed) ?
-              <div>
-                <p>
+              <div className="row">
+                <p className="col-md-12">
                   Try downloading some sample documents to see how they
                   compare. Compare <a href="sample.doc">this sample document
                   </a> with <a href="sample-moved-section-entire.doc">the same

@@ -1,14 +1,14 @@
 version: "2"
 services:
   coordinator: 
-    image: "coordinator-component:0.1"
+    image: "coordinator-component:1.0.1"
     ports:
       - "9000:9000"
     environment:
       - PLAY_APPLICATION_SECRET
     mem_limit: 300000000
   analysis:
-    image: "analysis-component:0.1"
+    image: "analysis-component:1.0.1"
     environment:
       - LUCIDA_API_BASE=http://coordinator:9000
     mem_limit: 300000000
