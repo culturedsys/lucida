@@ -31,10 +31,10 @@ class App extends Component {
           (!this.state.waiting && !this.state.completed) ?
               <div>
                 <p>
-                  Download some sample documents to see how they compare. Try
-                  comparing <a href="sample.doc">this sample document
-                  </a> with <a href="sample-moved-section-entire.doc">this document
-                  with a section moved</a>.
+                  Try downloading some sample documents to see how they
+                  compare. Compare <a href="sample.doc">this sample document
+                  </a> with <a href="sample-moved-section-entire.doc">the same
+                  document with a section moved</a>.
                 </p>
               </div> : ''
         }
